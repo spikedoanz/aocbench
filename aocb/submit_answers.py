@@ -11,7 +11,7 @@ if __name__ == "__main__":
     assert aoc_session, "Please get an AOC token https://github.com/wimglenn/advent-of-code-wim/issues/1"
 
     days  = [i for i in range(1,26)]
-    years = [i for i in range(2015, 2025)]
+    years = [i for i in range(2015, 2016)]
 
     solutions_path = Path("./solutions")
     inputs_path = Path("./inputs")
@@ -47,15 +47,12 @@ if __name__ == "__main__":
 
             lines = result.stdout.strip().split('\n')
 
-            if len(lines) < 2:
-                print(f"  Expected 2 lines of output, got {len(lines)}")
+            if len(lines) < 1:
+                print(f"  No output from script")
                 continue
 
             part_a = lines[0].strip()
-            part_b = lines[1].strip()
-
             print(f"  Part A: {part_a}")
-            print(f"  Part B: {part_b}")
 
             # Submit part A
             try:
@@ -66,14 +63,20 @@ if __name__ == "__main__":
 
             time.sleep(2)  # rate limiting
 
-            # Submit part B
-            try:
-                submit(part_b, part="b", day=day, year=year)
-                print(f"  Submitted part B")
-            except Exception as e:
-                print(f"  Error submitting part B: {e}")
+            # Submit part B if available (day 25 only has part A)
+            if len(lines) >= 2:
+                part_b = lines[1].strip()
+                print(f"  Part B: {part_b}")
 
-            time.sleep(2)  # rate limiting
+                try:
+                    submit(part_b, part="b", day=day, year=year)
+                    print(f"  Submitted part B")
+                except Exception as e:
+                    print(f"  Error submitting part B: {e}")
+
+                time.sleep(2)  # rate limiting
+            else:
+                print(f"  Part B: skipped (day 25 has no part B)")
 
         except subprocess.TimeoutExpired:
             print(f"  Timeout running {filepath}")

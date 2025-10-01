@@ -16,7 +16,9 @@ def tick(data):
     return new_data
 
 def play(data, steps, part=1):
-    data = data.copy()
+    data = [row[:] for row in data]
+    if part == 2:
+        data[1][1] = data[1][SIZE] = data[SIZE][1] = data[SIZE][SIZE] = 1
     for _ in range(steps):
         data = tick(data)
         if part == 2:
