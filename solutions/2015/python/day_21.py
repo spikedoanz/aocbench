@@ -31,4 +31,6 @@ def solve():
     return min_cost, max_cost
 
 
-print(solve())
+pt1, pt2 = solve()
+print(pt1)
+print(pt2)

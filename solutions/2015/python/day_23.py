@@ -1,32 +1,49 @@
-data = open("inputs/2015_23.txt").read().splitlines()
-
-def run_program(a=0):
-    b = 0
-    ip = 0
-    while ip < len(data):
-        inst = data[ip].split()
-        op = inst[0]
-        if op == "hlf":
-            if inst[1] == "a,": a //= 2
-            else: b //= 2
-        elif op == "tpl":
-            if inst[1] == "a,": a *= 3
-            else: b *= 3
-        elif op == "inc":
-            if inst[1] == "a": a += 1
-            else: b += 1
+def compile_program(data):
+    instructions = []
+    for line in data:
+        parts = line.split()
+        op = parts[0]
+        
+        if op in ["hlf", "tpl", "inc"]:
+            reg = 0 if parts[1].rstrip(',') == "a" else 1
+            instructions.append((op, reg))
         elif op == "jmp":
-            ip += int(inst[1]) - 1
-        elif op == "jie":
-            val = a if inst[1] == "a," else b
-            if val % 2 == 0:
-                ip += int(inst[2]) - 1
-        elif op == "jio":
-            val = a if inst[1] == "a," else b
-            if val == 1:
-                ip += int(inst[2]) - 1
-        ip += 1
-    return b
+            instructions.append((op, int(parts[1])))
+        elif op in ["jie", "jio"]:
+            reg = 0 if parts[1] == "a," else 1
+            offset = int(parts[2])
+            instructions.append((op, reg, offset))
+    
+    return instructions
 
-print(run_program(0))
-print(run_program(1))
+def run_program_fast(a=0):
+    b = 0
+    regs = [a, b]
+    ip = 0
+    
+    while ip < len(instructions):
+        inst = instructions[ip]
+        op = inst[0]
+        
+        if op == "hlf":
+            regs[inst[1]] //= 2
+        elif op == "tpl":
+            regs[inst[1]] *= 3
+        elif op == "inc":
+            regs[inst[1]] += 1
+        elif op == "jmp":
+            ip += inst[1] - 1
+        elif op == "jie":
+            if regs[inst[1]] % 2 == 0:
+                ip += inst[2] - 1
+        elif op == "jio":
+            if regs[inst[1]] == 1:
+                ip += inst[2] - 1
+        ip += 1
+    
+    return regs[1]
+
+data = open("inputs/2015_23.txt").read().splitlines()
+instructions = compile_program(data)
+print(run_program_fast(0))
+print(run_program_fast(1))
