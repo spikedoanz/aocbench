@@ -3,7 +3,7 @@ from math import prod
 
 
 TOTAL = 100
-numbers = re.compile("-?\d+")
+numbers = re.compile(r"-?\d+")
 parse_line = lambda line: tuple(map(int, re.findall(numbers, line)))
 parse_data = lambda data: tuple(zip(*map(parse_line, data)))
 

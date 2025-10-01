@@ -2,7 +2,7 @@ import json
 import re
 
 
-numbers = re.compile("-?\d+")
+numbers = re.compile(r"-?\d+")
 
 def find_sum(jason):
     if type(jason) is int:

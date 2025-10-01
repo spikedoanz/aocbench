@@ -2,7 +2,7 @@ import re
 
 
 FINISH = 2503
-numbers = re.compile("-?\d+")
+numbers = re.compile(r"-?\d+")
 parse_line = lambda line: tuple(map(int, re.findall(numbers, line)))
 
 def calc_dist(speed, time, rest, finish=FINISH):
