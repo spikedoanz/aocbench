@@ -1,0 +1,10 @@
+name = "Sonnet45_2025_14"
+version = "0.1.0"
+defaultTargets = ["sonnet45_2025_14"]
+
+[[lean_lib]]
+name = "Sonnet45202514"
+
+[[lean_exe]]
+name = "sonnet45_2025_14"
+root = "Main"

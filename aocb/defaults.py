@@ -7,6 +7,40 @@ problems_path   = Path("./problems/txt")
 inputs_path     = Path("./inputs/") 
 solutions_path  = Path("./solutions")
 
+
+SYSTEM_PROMPT = """
+You're in an text editing environment on a computer.
+You're a programmer proficient at the Lean4 programming language.
+"""
+
+USER_PROMPT = """
+You find before yourself a programming puzzle:
+
+{part1_text}
+{part2_text}
+
+===========================================================
+
+Please solve the problem by writing pure lean code, you should 
+structure your submission as follows:
+
+```lean4
+import Input
+
+def part1 (input : String) -> String := ...
+
+def part2 (input : String) -> String :=
+
+def main : IO Unit := do
+  IO.println part1 Input.string
+  IO.println part2 Input.string
+```
+
+make sure to only include the exact string of the solution.
+
+Good luck, have fun!
+"""
+
 def get_solution_path(
     year: int,
     day: int,
@@ -42,10 +76,23 @@ def get_inputs_path(
     input_fn = str(year) + "_" + day_str + ".txt"
     return inputs_path / input_fn
 
-p1, p2 = get_problem_path(2015, 25)
-print(p1)
-assert p1.is_file()
-assert p2.is_file()
-inp = get_inputs_path(2015,10)
-print(inp)
-assert inp.is_file()
+def path_to_str(
+    path: Path
+) -> str:
+    assert path.is_file()
+    with open(path, "r") as f:
+        return f.read()
+
+
+def get_prompt(
+    year:int,
+    day:int,
+    template= USER_PROMPT,
+) -> str:
+    p1_str, p2_str = map(path_to_str, get_problem_path(year,day))
+    if day == 25: p2_str = "" # day 25 part 2 is flavor text            
+    return template.format(
+        part1_text = p1_str, part2_text = p2_str
+    )
+
+print(get_prompt(2015,14))
