@@ -1,4 +1,4 @@
-START = list(map(int, '01110110101001000'))
+START = list(map(int, open("inputs/2016_16.txt").read().strip()))
 DISK_1 = 272
 DISK_2 = 35651584
 

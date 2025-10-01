@@ -19,7 +19,7 @@ solve = lambda func: (
          for route in permutations(locations)))
 
 
-data = map(parse_line, open("inputs/09.txt").read().splitlines())
+data = map(parse_line, open("inputs/2015_09.txt").read().splitlines())
 locations, relations = create_relations(data)
 
 print(solve(min))

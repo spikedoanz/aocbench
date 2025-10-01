@@ -1,4 +1,4 @@
-with open('./inputs/20.txt', 'r') as infile:
+with open('./inputs/2016_20.txt', 'r') as infile:
     addresses = infile.read().split('\n')
 
 ips = sorted([tuple(map(int, address.split('-'))) for address in addresses])

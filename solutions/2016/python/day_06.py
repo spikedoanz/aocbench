@@ -1,6 +1,6 @@
 from collections import Counter
 
-with open('./inputs/06.txt', 'r') as infile:
+with open('./inputs/2016_06.txt', 'r') as infile:
     noise = infile.readlines()
 
 columns = (''.join(column) for column in zip(*noise))

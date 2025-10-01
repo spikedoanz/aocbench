@@ -17,7 +17,7 @@ def solve(digits, times):
     return digits
 
 
-INPUT = "3113322113"
+INPUT = open("inputs/2015_10.txt").read().strip()
 
 print(len(first := solve(INPUT, 40)))
 print(len(solve(first, 10)))

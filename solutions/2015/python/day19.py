@@ -28,7 +28,7 @@ def part_2(molecule):
     return elements - 2*rn - 2*y - 1
 
 
-data = open("inputs/19.txt").read().splitlines()
+data = open("inputs/2015_19.txt").read().splitlines()
 molecule = data[-1]
 replacements = generate_replacements(data)
 

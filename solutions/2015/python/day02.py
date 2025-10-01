@@ -1,7 +1,7 @@
 from itertools import starmap
 
 
-data = open("inputs/02.txt").read().splitlines()
+data = open("inputs/2015_02.txt").read().splitlines()
 dimensions = [sorted(map(int, line.split('x'))) for line in data]
 
 paper =  lambda a, b, c: 3*a*b + 2*b*c + 2*c*a

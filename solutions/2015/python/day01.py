@@ -1,7 +1,7 @@
 from itertools import accumulate
 
 
-data = open("inputs/01.txt").readline()
+data = open("inputs/2015_01.txt").readline()
 
 travel = lambda acc, c: acc + (1 if c == '(' else -1)
 floors_visited = list(accumulate(data, travel, initial=0))

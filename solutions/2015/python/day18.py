@@ -25,7 +25,7 @@ def play(data, steps, part=1):
 
 
 SIZE = 100
-data = load_data("inputs/18.txt")
+data = load_data("inputs/2015_18.txt")
 
 print(play(data, 100))
 print(play(data, 100, part=2))

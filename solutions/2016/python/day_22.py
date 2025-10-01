@@ -1,7 +1,7 @@
 import re
 import numpy as np
 
-with open('./inputs/22.txt', 'r') as infile:
+with open('./inputs/2016_22.txt', 'r') as infile:
     lines = infile.read().split('\n')
 
 avail = []

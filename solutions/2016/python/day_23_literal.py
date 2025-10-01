@@ -1,5 +1,5 @@
 def execute(a):
-    with open("./inputs/23.txt", 'r') as infile:
+    with open("./inputs/2016_23.txt", 'r') as infile:
         instructions = infile.read().splitlines()
 
     register = {'a': a, 'b': 0, 'c': 0, 'd': 0}

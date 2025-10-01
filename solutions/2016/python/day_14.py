@@ -1,6 +1,6 @@
 from hashlib import md5
 
-SALT = 'qzyelonm'
+SALT = open("inputs/2016_14.txt").read().strip()
 
 
 def find_keys(second_part=False):

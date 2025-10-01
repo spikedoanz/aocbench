@@ -7,6 +7,6 @@ def solve(target, limit):
             return i
 
 
-INPUT = 33100000
+INPUT = int(open("inputs/2015_20.txt").read().strip())
 print(solve(INPUT//10, INPUT//10))
 print(solve(INPUT//11, 50))

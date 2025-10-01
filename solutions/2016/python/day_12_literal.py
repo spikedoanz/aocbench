@@ -1,4 +1,4 @@
-with open("./inputs/12.txt", 'r') as infile:
+with open("./inputs/2016_12.txt", 'r') as infile:
     instructions = infile.read().splitlines()
 
 

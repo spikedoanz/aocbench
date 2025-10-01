@@ -2,7 +2,7 @@ from collections import deque
 from hashlib import md5
 
 
-INPUT = 'bwnlcvfs'
+INPUT = open("inputs/2016_17.txt").read().strip()
 VAULT = 3+3j
 
 

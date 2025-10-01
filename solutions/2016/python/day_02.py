@@ -1,4 +1,4 @@
-with open('./inputs/02.txt', 'r') as infile:
+with open('./inputs/2016_02.txt', 'r') as infile:
     puzzle = infile.readlines()
 
 DIRECTIONS = {

@@ -1,6 +1,6 @@
 import re
 
-with open('./inputs/15.txt', 'r') as infile:
+with open('./inputs/2016_15.txt', 'r') as infile:
     instructions = infile.read().split('\n')
 
 discs = []

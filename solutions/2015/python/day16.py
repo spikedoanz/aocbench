@@ -28,7 +28,7 @@ solve = lambda data, func: next(i for i, line in enumerate(data, 1)
                                 if all(func(*p) for p in line))
 
 
-data = list(map(parse_line, open("inputs/16.txt").read().splitlines()))
+data = list(map(parse_line, open("inputs/2015_16.txt").read().splitlines()))
 
 print(solve(data, check_1))
 print(solve(data, check_2))

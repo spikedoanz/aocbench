@@ -1,6 +1,6 @@
 from itertools import chain
 
-with open('./inputs/03.txt', 'r') as infile:
+with open('./inputs/2016_03.txt', 'r') as infile:
     puzzle = infile.readlines()
 
 horizontal = [[int(value) for value in row.split()] for row in puzzle]

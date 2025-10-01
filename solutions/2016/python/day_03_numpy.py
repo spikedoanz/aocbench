@@ -1,6 +1,6 @@
 import numpy as np
 
-in_ = np.loadtxt('./inputs/03.txt')
+in_ = np.loadtxt('./inputs/2016_03.txt')
 
 def find_triangles(arr):
     arr.sort(axis=1)

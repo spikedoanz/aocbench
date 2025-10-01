@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-with open('./inputs/10.txt', 'r') as infile:
+with open('./inputs/2016_10.txt', 'r') as infile:
     instructions = infile.read().split('\n')
 
 initial = [line.split() for line in instructions if line.startswith('value')]

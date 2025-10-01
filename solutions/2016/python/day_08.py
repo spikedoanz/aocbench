@@ -1,7 +1,7 @@
 import numpy as np
 # import matplotlib.pyplot as plt
 
-with open('./inputs/08.txt', 'r') as infile:
+with open('./inputs/2016_08.txt', 'r') as infile:
     instructions = infile.read().split('\n')
 
 lcd = np.zeros((6, 50))

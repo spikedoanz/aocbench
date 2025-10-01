@@ -8,7 +8,7 @@ def solve(target, start=1):
         if m.startswith(target): return i
 
 
-INPUT = "ckczppom"
+INPUT = open("inputs/2015_04.txt").read().strip()
 
 print(solve(5*'0'))
 print(solve(6*'0'))

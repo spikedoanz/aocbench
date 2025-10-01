@@ -1,6 +1,6 @@
 from collections import deque
 
-INPUT = 1364
+INPUT = int(open("inputs/2016_13.txt").read().strip())
 GOAL = (31, 39)
 START = (1, 1)
 DELTAS = ((1, 0), (-1, 0), (0, 1), (0, -1))
