@@ -18,7 +18,7 @@ solve = lambda people, rels: (
         for pp in permutations(people)))
 
 
-data = map(parse_line, open("inputs/13.txt").read().splitlines())
+data = map(parse_line, open("inputs/2015_13.txt").read().splitlines())
 relations = create_relations(data)
 people = set(relations.keys())
 

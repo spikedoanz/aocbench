@@ -1,6 +1,6 @@
 import re
 
-with open('./inputs/07.txt', 'r') as infile:
+with open('./inputs/2016_07.txt', 'r') as infile:
     addresses = infile.readlines()
 
 addresses_separated = [re.split(r'\[|\]', line.strip()) for line in addresses]

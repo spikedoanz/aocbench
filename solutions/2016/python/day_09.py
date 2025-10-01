@@ -1,6 +1,6 @@
 import re
 
-with open('./inputs/09.txt', 'r') as infile:
+with open('./inputs/2016_09.txt', 'r') as infile:
     compressed = infile.read()
 
 pattern = re.compile(r'\((\d+)x(\d+)\)')

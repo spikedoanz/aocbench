@@ -10,7 +10,7 @@ def solve(data):
     return used_containers
 
 
-data = sorted(map(int, open("inputs/17.txt").read().splitlines()), reverse=True)
+data = sorted(map(int, open("inputs/2015_17.txt").read().splitlines()), reverse=True)
 
 combinations = solve(data)
 print(len(combinations))

@@ -1,4 +1,4 @@
-with open('./inputs/04.txt', 'r') as infile:
+with open('./inputs/2016_04.txt', 'r') as infile:
     all_rooms = infile.read().splitlines()
 
 rooms = ((room[:-11].replace('-', ''),

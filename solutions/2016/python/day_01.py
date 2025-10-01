@@ -1,4 +1,4 @@
-with open('./inputs/01.txt', 'r') as infile:
+with open('./inputs/2016_01.txt', 'r') as infile:
     directions = infile.readline().split(', ')
 
 ROTATION = {

@@ -15,7 +15,7 @@ def find_sum(jason):
     else: return 0
 
 
-data = open("inputs/12.txt").read()
+data = open("inputs/2015_12.txt").read()
 j = json.loads(data)
 
 print(sum(map(int, re.findall(numbers, data))))

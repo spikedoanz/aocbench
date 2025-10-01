@@ -8,7 +8,7 @@ def solve(data, players=1):
     return len(visited)
 
 
-data = open("inputs/03.txt").readline()
+data = open("inputs/2015_03.txt").readline()
 
 print(solve(data))
 print(solve(data, 2))

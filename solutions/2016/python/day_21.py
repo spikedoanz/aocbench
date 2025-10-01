@@ -1,4 +1,4 @@
-with open('./inputs/21.txt', 'r') as infile:
+with open('./inputs/2016_21.txt', 'r') as infile:
     INSTRUCTIONS = infile.read().split('\n')
 
 

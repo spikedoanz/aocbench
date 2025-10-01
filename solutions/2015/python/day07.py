@@ -17,7 +17,7 @@ def get_value(wires, wire='a', b=None):
     return aux(wire)
 
 
-data = open("inputs/07.txt").read().splitlines()
+data = open("inputs/2015_07.txt").read().splitlines()
 wires = parse_input(data)
 
 print(first := get_value(wires))

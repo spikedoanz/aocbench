@@ -8,7 +8,7 @@ is_nice_2 = lambda s: (
     any(a == b for a, b in zip(s, s[2:])))
 
 
-data = open("inputs/05.txt").read().splitlines()
+data = open("inputs/2015_05.txt").read().splitlines()
 
 print(sum(map(is_nice_1, data)))
 print(sum(map(is_nice_2, data)))

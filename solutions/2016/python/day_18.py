@@ -1,4 +1,4 @@
-with open('./inputs/18.txt', 'r') as infile:
+with open('./inputs/2016_18.txt', 'r') as infile:
     first_row = infile.read()
 
 

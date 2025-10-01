@@ -1,7 +1,7 @@
 from collections import deque
 from itertools import permutations
 
-with open("./inputs/24.txt", 'r') as infile:
+with open("./inputs/2016_24.txt", 'r') as infile:
     maze = infile.read().splitlines()
 
 

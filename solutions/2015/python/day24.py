@@ -12,7 +12,7 @@ def solve(data, groups):
     return min(possible_solutions)[1]
 
 
-data = sorted(map(int, open("inputs/24.txt").read().splitlines()), reverse=True)
+data = sorted(map(int, open("inputs/2015_24.txt").read().splitlines()), reverse=True)
 
 print(solve(data, 3))
 print(solve(data, 4))

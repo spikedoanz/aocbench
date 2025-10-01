@@ -27,5 +27,5 @@ def find_best_cookie(properties):
     return pt1, pt2
 
 
-data = parse_data(open("inputs/15.txt").read().splitlines())
+data = parse_data(open("inputs/2015_15.txt").read().splitlines())
 print(find_best_cookie(data))
