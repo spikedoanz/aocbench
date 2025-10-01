@@ -10,6 +10,8 @@ then submit all inputs
 
 then download all problems from the years.
 
+uv pip install  git+https://github.com/spikedoanz/lean_bench.git
+
 # acknowledgements 
 
 https://github.com/narimiran/advent_of_code_2015

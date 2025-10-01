@@ -7,15 +7,15 @@ Please solve the problem by writing pure lean code, you can
 structure your inputs as follows:
 
 ```lean4
-import input -- this is a String
+import Input
 
 def part1 (input : String) -> String := ...
 
 def part2 (input : String) -> String :=
 
 def main : IO Unit := do
-  IO.println part1 input
-  IO.println part2 input
+  IO.println part1 Input.string
+  IO.println part2 Input.string
 ```
 
 make sure to only include the exact string of the solution.
