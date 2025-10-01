@@ -4,6 +4,11 @@ please obtain an advent of code user token
 
 github.com/wimglenn/advent-of-code-data
 
+download all inputs
+
+then submit all inputs
+
+then download all problems from the years.
 
 # acknowledgements 
 

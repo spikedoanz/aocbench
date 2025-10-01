@@ -48,7 +48,7 @@ if __name__ == "__main__":
             lines = result.stdout.strip().split('\n')
 
             if len(lines) < 1:
-                print(f"  No output from script")
+                print("  No output from script")
                 continue
 
             part_a = lines[0].strip()
@@ -57,7 +57,7 @@ if __name__ == "__main__":
             # Submit part A
             try:
                 submit(part_a, part="a", day=day, year=year)
-                print(f"  Submitted part A")
+                print("  Submitted part A")
             except Exception as e:
                 print(f"  Error submitting part A: {e}")
 
@@ -70,13 +70,13 @@ if __name__ == "__main__":
 
                 try:
                     submit(part_b, part="b", day=day, year=year)
-                    print(f"  Submitted part B")
+                    print("  Submitted part B")
                 except Exception as e:
                     print(f"  Error submitting part B: {e}")
 
                 time.sleep(2)  # rate limiting
             else:
-                print(f"  Part B: skipped (day 25 has no part B)")
+                print("  Part B: skipped (day 25 has no part B)")
 
         except subprocess.TimeoutExpired:
             print(f"  Timeout running {filepath}")

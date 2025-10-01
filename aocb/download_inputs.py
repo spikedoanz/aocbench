@@ -13,6 +13,7 @@ if __name__ == "__main__":
     years = [i for i in range(2015, 2025)]
 
     root_path = Path("./inputs")
+    root_path.mkdir(parents=True, exist_ok=True)
 
     for (year, day) in list(product(years, days)):
         day_str = "0" + str(day) if day < 10 else str(day)
