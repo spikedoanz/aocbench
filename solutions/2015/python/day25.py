@@ -1,9 +1,11 @@
+import re
+
 FIRST = 20151125
 BASE = 252533
 MOD = 33554393
 
-ROW = 2981
-COL = 3075
+data = open("inputs/2015_25.txt").read()
+ROW, COL = map(int, re.findall(r'\d+', data))
 
 
 def find_exp(r, c):

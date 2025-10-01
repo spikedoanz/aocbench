@@ -11,7 +11,9 @@ spells = {
     Spell('recharge', 229, 0, 0, 0, 101, 5)
 }
 
-BOSS_DMG = 8
+data = open("inputs/2015_22.txt").read().splitlines()
+BOSS_HP = int(data[0].split(": ")[1])
+BOSS_DMG = int(data[1].split(": ")[1])
 
 
 def battle(hard_mode):
@@ -23,7 +25,7 @@ def battle(hard_mode):
             if spell.armor > 0 and boss_turn: s['hp'] += 7
         s['active_spells'] = {spell: dur-1 for spell, dur in s['active_spells'].items() if dur > 1}
 
-    states = [dict(mana=500, hp=50, boss_hp=55, active_spells=dict(), spent_mana=0)]
+    states = [dict(mana=500, hp=50, boss_hp=BOSS_HP, active_spells=dict(), spent_mana=0)]
     result = 9999
 
     while states:

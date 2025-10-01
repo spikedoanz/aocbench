@@ -1,6 +1,6 @@
 import hashlib
 
-DOOR_ID = 'wtnhxymk'
+DOOR_ID = open("inputs/2016_05.txt").read().strip()
 
 first_password = ''
 second_password = [''] * 8

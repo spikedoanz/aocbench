@@ -1,6 +1,6 @@
 import numpy as np
 
-INPUT = 3018458
+INPUT = int(open("inputs/2016_19.txt").read().strip())
 
 def find_elf(elves):
     if len(elves) <= 2:
