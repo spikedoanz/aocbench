@@ -1,4 +1,5 @@
 import hashlib
+import uuid
 from typing import List
 
 import verifiers as vf
@@ -18,8 +19,8 @@ from aocb.task import (
 def load_environment(
     years: List[int] = [2015],
     days: List[int] = list(range(1, 26)),
-    eval_days: List[int] = list(range(1,26)),
-    use_think: bool = True,
+    eval_days: List[int] = list(range(1,25)),
+    use_think: bool = False,
     system_prompt: str = SYSTEM_PROMPT,
     weights: List[float] = [0.3, 0.7],
 ):
@@ -45,9 +46,11 @@ def load_environment(
     def tasks_to_dataset(tasks):
         data = [
             {
-                "question": task["content"],
-                "year": task["year"],
-                "day": task["day"],
+                "question": task["prompt"],  # Changed from "prompt" to "question"
+                "info": {
+                    "year": task["year"],
+                    "day": task["day"],
+                },
             }
             for task in tasks
         ]
@@ -72,13 +75,23 @@ def load_environment(
 
     def get_results(completion, year, day, parser):
         """Cache task creation and execution results."""
-        key = (year, day, hashlib.md5(completion.encode()).hexdigest())
+        # Convert completion to string for hashing (handles both str and list[dict])
+        if isinstance(completion, list):
+            # For chat format, get the last assistant message
+            completion_str = ""
+            for msg in completion:
+                if msg.get("role") == "assistant":
+                    completion_str += msg.get("content", "")
+        else:
+            completion_str = completion
+
+        key = (year, day, hashlib.md5(completion_str.encode()).hexdigest())
         if key not in cache:
             extracted = parser.parse_answer(completion)
             if extracted is None:
                 cache[key] = (None, None)
             else:
-                task_id = f"{year}_{day}_{key[2][:8]}"
+                task_id = f"{year}_{day:02d}_{uuid.uuid4()}"
                 create_task(
                     task_identifier=task_id,
                     submission=extracted,
@@ -89,13 +102,17 @@ def load_environment(
                 cache[key] = (compile_result, run_result)
         return cache[key]
 
-    def compile_reward_func(parser, completion, year, day, **kwargs):
+    def compile_reward_func(parser, completion, info, **kwargs):
+        year = info["year"]
+        day = info["day"]
         compile_result, _ = get_results(completion, year, day, parser)
         if compile_result is None:
             return 0.0
         return compile_reward(compile_result)
 
-    def correctness_reward_func(parser, completion, year, day, **kwargs):
+    def correctness_reward_func(parser, completion, info, **kwargs):
+        year = info["year"]
+        day = info["day"]
         _, run_result = get_results(completion, year, day, parser)
         if run_result is None:
             return 0.0
@@ -118,3 +135,6 @@ def load_environment(
     )
 
     return vf_env
+
+if __name__ == "__main__":
+    load_environment()

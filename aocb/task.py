@@ -1,5 +1,6 @@
 import re
 import subprocess
+import uuid
 from subprocess import CompletedProcess
 from itertools import product
 from typing import Tuple, List, Dict
@@ -157,12 +158,19 @@ def get_prompt(year: int, day: int) -> str:
 
 
 def create_task(
-    task_identifier: str = "example_task",
+    task_identifier: str | None = None,
     submission: str = MAIN_LEAN_TEMPLATE.render(project_name=DEFAULT_PROJECT_NAME),
     year: int = 2015,
     day: int = 14,
-) -> None:
-    """Create a Lean4 project structure with templated files."""
+) -> str:
+    """Create a Lean4 project structure with templated files.
+
+    Returns:
+        The task_identifier used for the created task.
+    """
+    if task_identifier is None:
+        task_identifier = f"{day:02d}_{year}_{uuid.uuid4()}"
+
     project_root_dir = CACHE_PATH / "submissions"
     project_name = DEFAULT_PROJECT_NAME
     input_str = path_to_str(get_input_path(year, day))
@@ -182,21 +190,23 @@ def create_task(
         )),
         ("Main.lean", submission),
     ]
-    
+
     # Write all files
     for filepath, content in project_files:
         path = project_root_dir / task_identifier / project_name / filepath
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content)
 
+    return task_identifier
+
 
 def run_task(
-    task_identifer = "example_task",
+    task_identifier: str,
 ):
     """Build and run a Lean4 project."""
     project_root_dir = CACHE_PATH / "submissions"
     project_name = DEFAULT_PROJECT_NAME
-    project_path = project_root_dir / task_identifer / project_name
+    project_path = project_root_dir / task_identifier / project_name
     
     if not project_path.exists():
         raise FileNotFoundError(f"Project not found: {project_path}")
@@ -226,7 +236,7 @@ def load_task( year:int, day:int) -> Dict: # split?
     return {
         "year": year,
         "day": day,
-        "content": get_prompt(year,day)
+        "prompt": get_prompt(year,day)
     }
 
 def load_tasks(
@@ -295,8 +305,9 @@ def correctness_reward(
 
 
 if __name__ == "__main__":
-    create_task()
-    compile_result, run_result = run_task()
+    task_id = create_task()
+    print(f"Created task: {task_id}")
+    compile_result, run_result = run_task(task_id)
     print("Compile result:", compile_result)
     print("Run result:", run_result)
     print(compile_reward(compile_result))
