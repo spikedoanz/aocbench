@@ -18,7 +18,7 @@ from aocb.task import (
 def load_environment(
     years: List[int] = [2015],
     days: List[int] = list(range(1, 26)),
-    eval_days: List[int] = [4, 8, 12, 20],
+    eval_days: List[int] = list(range(1,26)),
     use_think: bool = True,
     system_prompt: str = SYSTEM_PROMPT,
     weights: List[float] = [0.3, 0.7],
