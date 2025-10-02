@@ -1,4 +1,5 @@
 import hashlib
+import uuid
 from typing import List
 
 import verifiers as vf
@@ -78,7 +79,7 @@ def load_environment(
             if extracted is None:
                 cache[key] = (None, None)
             else:
-                task_id = f"{year}_{day}_{key[2][:8]}"
+                task_id = f"{day:02d}_{year}_{uuid.uuid4()}"
                 create_task(
                     task_identifier=task_id,
                     submission=extracted,
