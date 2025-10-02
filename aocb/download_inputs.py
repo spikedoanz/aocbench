@@ -1,9 +1,9 @@
 import os
 import time
-from pathlib import Path
 from itertools import product
 
 from aocd import get_data
+from .defaults import INPUTS_PATH
 
 if __name__ == "__main__":
     aoc_session = os.environ.get("AOC_SESSION")
@@ -12,7 +12,7 @@ if __name__ == "__main__":
     days  = [i for i in range(1,26)]
     years = [i for i in range(2015, 2025)]
 
-    root_path = Path("./inputs")
+    root_path = INPUTS_PATH
     root_path.mkdir(parents=True, exist_ok=True)
 
     for (year, day) in list(product(years, days)):
