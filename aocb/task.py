@@ -230,7 +230,7 @@ def load_task( year:int, day:int) -> Dict: # split?
     return {
         "year": year,
         "day": day,
-        "content": get_prompt(year,day)
+        "prompt": get_prompt(year,day)
     }
 
 def load_tasks(
