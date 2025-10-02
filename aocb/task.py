@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 import uuid
@@ -13,14 +14,20 @@ from aocb.defaults import (
     PROBLEMS_TXT_PATH,
     INPUTS_PATH,
     SOLUTIONS_PATH,
-    DEFAULT_PROJECT_NAME
+    DEFAULT_PROJECT_NAME,
+    DEFAULT_LAKE_TIMEOUT
 )
 
 from aocb.submit import get_answer
+from aocb.docs import DOCS
 
-SYSTEM_PROMPT = """
+SYSTEM_PROMPT = f"""
 You're in an text editing environment on a computer.
 You're a programmer proficient at the Lean4 programming language.
+
+You look inside your pocket, and find a giant instruction manual,
+it reads:
+{DOCS}
 """
 
 USER_PROMPT_TEMPLATE = Template("""
@@ -208,15 +215,27 @@ def run_task(
     project_name = DEFAULT_PROJECT_NAME
     project_path = project_root_dir / task_identifier / project_name
     
+    if int(os.environ.get("VERBOSE", 0)) > 0: 
+        print(f"Running task at {project_path}")
     if not project_path.exists():
         raise FileNotFoundError(f"Project not found: {project_path}")
     
     # Compile the project
+
+    _update_result = subprocess.run(
+        ["lake", "update"],
+        cwd=project_path,
+        capture_output=True,
+        text=True,
+        timeout=DEFAULT_LAKE_TIMEOUT,
+    ) # required for batteries
+
     compile_result = subprocess.run(
         ["lake", "build"],
         cwd=project_path,
         capture_output=True,
         text=True,
+        timeout=DEFAULT_LAKE_TIMEOUT,
     )
     
     # Only run if compilation succeeded
@@ -227,8 +246,11 @@ def run_task(
             cwd=project_path,
             capture_output=True,
             text=True,
+            timeout=DEFAULT_LAKE_TIMEOUT,
         )
     
+    if int(os.environ.get("VERBOSE", 0)) > 0: 
+        print(f"Ran task at {project_path}")
     return compile_result, run_result
 
 

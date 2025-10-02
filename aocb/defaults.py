@@ -16,3 +16,6 @@ SOLUTIONS_PATH = Path("./solutions")
 
 # Common constants
 AVAILABLE_YEARS = list(range(2015, 2017))
+
+# Timeout for lake commands (in seconds)
+DEFAULT_LAKE_TIMEOUT = 60
