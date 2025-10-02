@@ -46,9 +46,11 @@ def load_environment(
     def tasks_to_dataset(tasks):
         data = [
             {
-                "prompt": task["prompt"],
-                "year": task["year"],
-                "day": task["day"],
+                "question": task["prompt"],  # Changed from "prompt" to "question"
+                "info": {
+                    "year": task["year"],
+                    "day": task["day"],
+                },
             }
             for task in tasks
         ]
@@ -73,7 +75,17 @@ def load_environment(
 
     def get_results(completion, year, day, parser):
         """Cache task creation and execution results."""
-        key = (year, day, hashlib.md5(completion.encode()).hexdigest())
+        # Convert completion to string for hashing (handles both str and list[dict])
+        if isinstance(completion, list):
+            # For chat format, get the last assistant message
+            completion_str = ""
+            for msg in completion:
+                if msg.get("role") == "assistant":
+                    completion_str += msg.get("content", "")
+        else:
+            completion_str = completion
+
+        key = (year, day, hashlib.md5(completion_str.encode()).hexdigest())
         if key not in cache:
             extracted = parser.parse_answer(completion)
             if extracted is None:
@@ -90,13 +102,17 @@ def load_environment(
                 cache[key] = (compile_result, run_result)
         return cache[key]
 
-    def compile_reward_func(parser, completion, year, day, **kwargs):
+    def compile_reward_func(parser, completion, info, **kwargs):
+        year = info["year"]
+        day = info["day"]
         compile_result, _ = get_results(completion, year, day, parser)
         if compile_result is None:
             return 0.0
         return compile_reward(compile_result)
 
-    def correctness_reward_func(parser, completion, year, day, **kwargs):
+    def correctness_reward_func(parser, completion, info, **kwargs):
+        year = info["year"]
+        day = info["day"]
         _, run_result = get_results(completion, year, day, parser)
         if run_result is None:
             return 0.0
