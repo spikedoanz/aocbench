@@ -1,5 +1,6 @@
 import re
 import subprocess
+from subprocess import CompletedProcess
 from itertools import product
 from typing import Tuple, List, Dict
 from pathlib import Path
@@ -14,10 +15,7 @@ from aocb.defaults import (
     DEFAULT_PROJECT_NAME
 )
 
-cache_path = CACHE_PATH
-problems_path = PROBLEMS_TXT_PATH
-inputs_path = INPUTS_PATH
-solutions_path = SOLUTIONS_PATH
+from aocb.submit import get_answer
 
 SYSTEM_PROMPT = """
 You're in an text editing environment on a computer.
@@ -32,19 +30,19 @@ You find before yourself a programming puzzle:
 
 ===========================================================
 
-Please solve the problem by writing pure lean code, you should 
+Please solve the problem by writing pure lean code, you should
 structure your submission as follows:
 
 ```lean4
-import Input
+import {{ project_name }}.Input
 
 def part1 (input : String) -> String := ...
 
 def part2 (input : String) -> String :=
 
 def main : IO Unit := do
-  IO.println part1 Input.string
-  IO.println part2 Input.string
+  IO.println part1 {{ project_name }}.Input.input
+  IO.println part2 {{ project_name }}.Input.input
 ```
 
 make sure to only include the exact string of the solution.
@@ -83,8 +81,8 @@ end {{ project_name }}.Input
 # Template for Main.lean
 MAIN_LEAN_TEMPLATE = Template("""import {{ project_name }}.Input
 
-def part1 (s: String) : String := s
-def part2 (s: String) : String := s
+def part1 (s: String) : String := "hello"
+def part2 (s: String) : String := "advent of code bench"
 
 def main : IO Unit := do
   IO.println (part1 {{ project_name }}.Input.input)
@@ -103,8 +101,8 @@ def validate_year_day(year: int, day: int) -> None:
 def get_solution_path(
     year: int,
     day: int,
-    solutions_path: Path = solutions_path,
 ) -> Path:
+    solutions_path = SOLUTIONS_PATH
     validate_year_day(year, day)
     day_str = f"day_{day:02d}"
     return solutions_path / str(year) / "python" / f"{day_str}.py"
@@ -113,8 +111,8 @@ def get_solution_path(
 def get_problem_path(
     year: int,
     day: int,
-    problems_path: Path = problems_path,
 ) -> Tuple[Path, Path]:
+    problems_path = PROBLEMS_TXT_PATH
     validate_year_day(year, day)
     day_str = f"{day:02d}"
     part1_fn = f"{year}_{day_str}_part1.txt"
@@ -125,8 +123,8 @@ def get_problem_path(
 def get_input_path(
     year: int,
     day: int,
-    inputs_path: Path = inputs_path,
 ) -> Path:
+    inputs_path = INPUTS_PATH
     validate_year_day(year, day)
     day_str = f"{day:02d}"
     input_fn = f"{year}_{day_str}.txt"
@@ -140,26 +138,31 @@ def path_to_str(path: Path) -> str:
 
 
 def get_prompt(year: int, day: int) -> str:
+    project_name = DEFAULT_PROJECT_NAME
     part1_path, part2_path = get_problem_path(year, day)
     part1_text = path_to_str(part1_path)
     part2_text = path_to_str(part2_path) if day != 25 else ""  # day 25 part 2 is flavor text
-    
+
     return USER_PROMPT_TEMPLATE.render(
         part1_text=part1_text,
-        part2_text=part2_text
+        part2_text=part2_text,
+        project_name=project_name
     )
 
 
 def create_task(
     task_identifier: str = "example_task",
-    project_root_dir: Path = cache_path / "submissions",
-    project_name: str = DEFAULT_PROJECT_NAME,
-    input_str: str = path_to_str(get_input_path(2015, 14, inputs_path)),
+    submission: str = MAIN_LEAN_TEMPLATE.render(project_name=DEFAULT_PROJECT_NAME),
+    year: int = 2015,
+    day: int = 14,
 ) -> None:
     """Create a Lean4 project structure with templated files."""
+    project_root_dir = CACHE_PATH / "submissions"
+    project_name = DEFAULT_PROJECT_NAME
+    input_str = path_to_str(get_input_path(year, day))
     project_root_dir.mkdir(parents=True, exist_ok=True)
     project_exe = project_name.lower()
-    
+
     # Define all project files with their templates
     project_files = [
         ("lake-manifest.json", LAKE_MANIFEST_TEMPLATE.render(project_name=project_name)),
@@ -171,7 +174,7 @@ def create_task(
             project_name=project_name,
             input_str=input_str
         )),
-        ("Main.lean", MAIN_LEAN_TEMPLATE.render(project_name=project_name)),
+        ("Main.lean", submission),
     ]
     
     # Write all files
@@ -183,10 +186,10 @@ def create_task(
 
 def run_task(
     task_identifer = "example_task",
-    project_root_dir: Path = cache_path / "submissions",
-    project_name: str = DEFAULT_PROJECT_NAME,
 ):
     """Build and run a Lean4 project."""
+    project_root_dir = CACHE_PATH / "submissions"
+    project_name = DEFAULT_PROJECT_NAME
     project_path = project_root_dir / task_identifer / project_name
     
     if not project_path.exists():
@@ -233,11 +236,65 @@ def extract_lean4_block(text: str) -> str|None:
     match = re.search(pattern, text, re.DOTALL)
     return match.group(1) if match else None
 
+def compile_reward(compile_result: CompletedProcess) -> float:
+    if compile_result.returncode != 0:
+        return 0.0
+    else:
+        return 1.0 
+
+def correctness_reward(
+    year: int,
+    day: int,
+    run_result: CompletedProcess | None,
+    p1_weight: float = 0.5,  # assigned to part 1
+    format_reward: float = 0.3
+) -> float:
+    if run_result is None:
+        return 0.0
+    answer = get_answer(year, day)
+    assert answer, f"No cached answer for {year}, {day}"  # TODO: invoke save answer
+    p1, p2 = answer['part1'], answer['part2']
+    
+    # Parse the output
+    output = run_result.stdout.strip() if run_result.stdout else ""
+    lines = output.split('\n')
+    
+    # Calculate format reward
+    format_score = format_reward if len(lines) == 2 else 0.0
+    
+    # Determine if p2 exists (adjust weights accordingly)
+    p2_exists = p2 is not None and p2 != ""
+    
+    if p2_exists:
+        # Both parts exist, use the provided weights
+        p2_weight = 1.0 - p1_weight - format_reward
+    else:
+        # Only part 1 exists, assign all non-format reward to p1
+        p1_weight = 1.0 - format_reward
+        p2_weight = 0.0
+    
+    # Calculate correctness scores
+    p1_score = 0.0
+    p2_score = 0.0
+    
+    if len(lines) >= 1:
+        p1_score = p1_weight if lines[0] == p1 else 0.0
+    
+    if p2_exists and len(lines) >= 2:
+        p2_score = p2_weight if lines[1] == p2 else 0.0
+    
+    # Total reward
+    total_reward = format_score + p1_score + p2_score
+    return total_reward
+
+
 if __name__ == "__main__":
     create_task()
     compile_result, run_result = run_task()
     print("Compile result:", compile_result)
     print("Run result:", run_result)
+    print(compile_reward(compile_result))
+    print(correctness_reward(2015, 14, run_result))
 
 #if __name__ == "__main__":
 #    print(extract_lean4_block(load_task(2015,1)['content']))
