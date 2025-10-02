@@ -5,12 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "lean-bench-sdk",
+    "jinja2>=3.1.6",
     "numpy>=2.3.3",
 ]
 
-[tool.ruff]
-exclude = ["solutions/"]
-
-[tool.uv.sources]
-lean-bench-sdk = { git = "https://github.com/spikedoanz/lean_bench.git" }
+[tool.setuptools.packages.find]
+include = ["aocb*"]
+exclude = ["extras*", "tests*", "docs*", "examples*"]
