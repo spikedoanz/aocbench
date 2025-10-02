@@ -151,6 +151,7 @@ def get_prompt(year: int, day: int) -> str:
 
 
 def create_task(
+    task_identifier: str = "example_task",
     project_root_dir: Path = cache_path / "submissions",
     project_name: str = DEFAULT_PROJECT_NAME,
     input_str: str = path_to_str(get_input_path(2015, 14, inputs_path)),
@@ -175,17 +176,18 @@ def create_task(
     
     # Write all files
     for filepath, content in project_files:
-        path = project_root_dir / project_name / filepath
+        path = project_root_dir / task_identifier / project_name / filepath
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content)
 
 
 def run_task(
+    task_identifer = "example_task",
     project_root_dir: Path = cache_path / "submissions",
     project_name: str = DEFAULT_PROJECT_NAME,
 ):
     """Build and run a Lean4 project."""
-    project_path = project_root_dir / project_name
+    project_path = project_root_dir / task_identifer / project_name
     
     if not project_path.exists():
         raise FileNotFoundError(f"Project not found: {project_path}")
@@ -231,11 +233,11 @@ def extract_lean4_block(text: str) -> str|None:
     match = re.search(pattern, text, re.DOTALL)
     return match.group(1) if match else None
 
-#if __name__ == "__main__":
-#    create_task()
-#    compile_result, run_result = run_task()
-#    print("Compile result:", compile_result)
-#    print("Run result:", run_result)
-
 if __name__ == "__main__":
-    print(extract_lean4_block(load_task(2015,1)['content']))
+    create_task()
+    compile_result, run_result = run_task()
+    print("Compile result:", compile_result)
+    print("Run result:", run_result)
+
+#if __name__ == "__main__":
+#    print(extract_lean4_block(load_task(2015,1)['content']))
