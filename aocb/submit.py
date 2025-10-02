@@ -1,10 +1,10 @@
 import os
 import subprocess
 import time
-from pathlib import Path
 from itertools import product
 
 from aocd import submit
+from .defaults import SOLUTIONS_PATH, INPUTS_PATH
 
 if __name__ == "__main__":
     aoc_session = os.environ.get("AOC_SESSION")
@@ -13,8 +13,8 @@ if __name__ == "__main__":
     days  = [i for i in range(1,26)]
     years = [i for i in range(2015, 2016)]
 
-    solutions_path = Path("./solutions")
-    inputs_path = Path("./inputs")
+    solutions_path = SOLUTIONS_PATH
+    inputs_path = INPUTS_PATH
 
     # Collect available solutions and inputs
     available_solutions = set()

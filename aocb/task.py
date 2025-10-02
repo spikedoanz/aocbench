@@ -1,14 +1,23 @@
+import re
 import subprocess
-from subprocess import CompletedProcess
-from typing import Tuple, Optional, NamedTuple
+from itertools import product
+from typing import Tuple, List, Dict
 from pathlib import Path
 from jinja2 import Template
 
-AVAILABLE_YEARS = list(range(2015, 2017))
-cache_path = Path("~/.cache/aocb/").expanduser()
-problems_path = Path("./problems/txt")
-inputs_path = Path("./inputs/")
-solutions_path = Path("./solutions")
+from aocb.defaults import (
+    AVAILABLE_YEARS,
+    CACHE_PATH,
+    PROBLEMS_TXT_PATH,
+    INPUTS_PATH,
+    SOLUTIONS_PATH,
+    DEFAULT_PROJECT_NAME
+)
+
+cache_path = CACHE_PATH
+problems_path = PROBLEMS_TXT_PATH
+inputs_path = INPUTS_PATH
+solutions_path = SOLUTIONS_PATH
 
 SYSTEM_PROMPT = """
 You're in an text editing environment on a computer.
@@ -83,11 +92,6 @@ def main : IO Unit := do
 """)
 
 
-class TaskResult(NamedTuple):
-    compile_result: CompletedProcess
-    run_result: Optional[CompletedProcess]
-
-
 def validate_year_day(year: int, day: int) -> None:
     """Validate year and day parameters."""
     if year not in AVAILABLE_YEARS:
@@ -148,13 +152,10 @@ def get_prompt(year: int, day: int) -> str:
 
 def create_task(
     project_root_dir: Path = cache_path / "submissions",
-    project_name: str = "Y2025D14ExampleTask",
-    input_str: str = None,
+    project_name: str = DEFAULT_PROJECT_NAME,
+    input_str: str = path_to_str(get_input_path(2015, 14, inputs_path)),
 ) -> None:
     """Create a Lean4 project structure with templated files."""
-    if input_str is None:
-        input_str = path_to_str(get_input_path(2015, 14, inputs_path))
-    
     project_root_dir.mkdir(parents=True, exist_ok=True)
     project_exe = project_name.lower()
     
@@ -181,8 +182,8 @@ def create_task(
 
 def run_task(
     project_root_dir: Path = cache_path / "submissions",
-    project_name: str = "Y2025D14ExampleTask",
-) -> TaskResult:
+    project_name: str = DEFAULT_PROJECT_NAME,
+):
     """Build and run a Lean4 project."""
     project_path = project_root_dir / project_name
     
@@ -207,11 +208,34 @@ def run_task(
             text=True,
         )
     
-    return TaskResult(compile_result=compile_result, run_result=run_result)
+    return compile_result, run_result
 
+
+def load_task( year:int, day:int) -> Dict: # split?
+    return {
+        "year": year,
+        "day": day,
+        "content": get_prompt(year,day)
+    }
+
+def load_tasks(
+    years: List[int] = [2015],
+    days: List[int] = list(range(1, 26)),
+) -> List[Dict]:
+    targets = product(years, days)
+    return [load_task(year, day) for year, day in targets]
+
+def extract_lean4_block(text: str) -> str|None:
+    """Extract content from ```lean4 ``` code block."""
+    pattern = r'```lean4\s*\n(.*?)\n```'
+    match = re.search(pattern, text, re.DOTALL)
+    return match.group(1) if match else None
+
+#if __name__ == "__main__":
+#    create_task()
+#    compile_result, run_result = run_task()
+#    print("Compile result:", compile_result)
+#    print("Run result:", run_result)
 
 if __name__ == "__main__":
-    create_task()
-    result = run_task()
-    print("Compile result:", result.compile_result)
-    print("Run result:", result.run_result)
+    print(extract_lean4_block(load_task(2015,1)['content']))
