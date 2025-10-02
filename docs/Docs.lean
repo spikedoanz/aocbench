@@ -5,14 +5,114 @@ import Batteries.Data.Array.Basic
 
 open Lean Meta Elab Command
 
--- Extract signature as a string
+-- Helper function to check if a string contains a substring
+def containsSubstring (s : String) (sub : String) : Bool :=
+  sub.toSubstring.toString ∈ s.splitOn ""
+
+-- Extract signature with cleaned parameter names
 def getSignature (name : Name) : MetaM String := do
   try
     let info ← getConstInfo name
-    let type ← ppExpr info.type
-    return s!"{name} : {type}"
+    let type := info.type
+    
+    -- Use forallTelescopeReducing to get parameter names and types
+    forallTelescopeReducing type fun params body => do
+      -- Build parameter list string
+      let mut paramStrs : Array String := #[]
+      let mut genericVarCount := 1
+      
+      for param in params do
+        let paramName ← param.fvarId!.getUserName
+        let paramNameStr := paramName.toString
+        let paramType ← inferType param
+        
+        -- Determine if this is a type class instance
+        let isInstance := containsSubstring paramNameStr "inst" || (← isClass? paramType).isSome
+        
+        -- Clean up the parameter name
+        let cleanName : String := 
+          if containsSubstring paramNameStr "_hyg" || containsSubstring paramNameStr "_@" then
+            -- This is an auto-generated name
+            if isInstance then
+              -- For instances, we'll handle specially below
+              ""
+            else if paramNameStr.startsWith "a._@" || paramNameStr.startsWith "x._@" then
+              -- Generic variable - give it a simple name
+              let n := s!"x{genericVarCount}"
+              n
+            else
+              -- Some other auto-generated name
+              "x"
+          else
+            -- User-provided name, keep it
+            paramNameStr
+        
+        -- Format the parameter based on type
+        let paramTypeFormat ← ppExpr paramType
+        let paramTypeStr := toString paramTypeFormat
+        let paramStr := 
+          if isInstance then
+            -- Check if it's a common type class
+            if containsSubstring paramTypeStr "ToString" then
+              "[ToString α]"
+            else if containsSubstring paramTypeStr "BEq" then
+              "[BEq α]"
+            else if containsSubstring paramTypeStr "Hashable" then
+              "[Hashable α]"
+            else if containsSubstring paramTypeStr "Inhabited" then
+              "[Inhabited α]"
+            else if containsSubstring paramTypeStr "Add" then
+              "[Add α]"
+            else if containsSubstring paramTypeStr "Zero" then
+              "[Zero α]"
+            else if containsSubstring paramTypeStr "Monad" then
+              "[Monad m]"
+            else
+              -- For other instances, just skip them to avoid clutter
+              ""
+          else if cleanName != "" then
+            s!"({cleanName} : {paramTypeStr})"
+          else
+            ""
+        
+        if paramStr != "" then
+          paramStrs := paramStrs.push paramStr
+      
+      -- Format the return type
+      let returnTypeFormat ← ppExpr body
+      let returnTypeStr := toString returnTypeFormat
+      
+      -- Special handling for IO functions to simplify their return types
+      let finalReturnType := 
+        if containsSubstring returnTypeStr "EStateM.Result" then
+          -- Extract just the IO part
+          if name.toString.startsWith "IO" then
+            match name with
+            | `IO.FS.readFile => "IO String"
+            | `IO.FS.writeFile => "IO Unit"
+            | `IO.FS.lines => "IO (Array String)"
+            | `IO.println => "IO Unit"
+            | `IO.print => "IO Unit"
+            | _ => returnTypeStr
+          else
+            returnTypeStr
+        else
+          returnTypeStr
+      
+      -- Combine everything
+      if paramStrs.isEmpty then
+        return s!"{name} : {finalReturnType}"
+      else
+        let paramsStr := " ".intercalate paramStrs.toList
+        return s!"{name} {paramsStr} : {finalReturnType}"
   catch _ =>
-    return s!"{name} : <not found>"
+    -- Fallback to simple type if the above fails
+    try
+      let info ← getConstInfo name
+      let typeFormat ← ppExpr info.type
+      return s!"{name} : {toString typeFormat}"
+    catch _ =>
+      return s!"{name} : <not found>"
 
 -- Command to extract all AoC-relevant signatures
 elab "#extract_aoc_reference" : command => do
@@ -54,7 +154,7 @@ elab "#extract_aoc_reference" : command => do
     `String.take,
     `String.startsWith,
     `String.endsWith,
-    `String.toCharArray,
+    --`String.toCharArray,
     `String.mk,
     `String.join,
     `String.intercalate
@@ -81,24 +181,25 @@ elab "#extract_aoc_reference" : command => do
     `List.splitAt,
     `List.reverse,
     `List.append,
-    `List.join,
+    --`List.join,
     `List.sum,
-    `List.prod,
-    `List.maximum?,
-    `List.minimum?,
-    `List.sort,
-    `List.dedup,
+    --`List.prod,
+    --`List.maximum?,
+    --`List.minimum?,
+    --`List.sort,
+    --`List.dedup,
+    `List.mergeSort,
     `List.contains,
     `List.elem,
     `List.count,
-    `List.indexOf?,
+    --`List.indexOf?,
     `List.findSome?,
     `List.find?,
     `List.all,
     `List.any,
     `List.range,
     `List.range',
-    `List.iota,
+    --`List.iota,
     `List.length,
     `List.isEmpty,
     `List.head?,
@@ -108,16 +209,16 @@ elab "#extract_aoc_reference" : command => do
     `List.getLast?,
     `List.partition,
     `List.span,
-    `List.groupBy,
+    --`List.groupBy,
     `List.lookup,
-    `List.enumFrom,
-    `List.enum,
+    --`List.enumFrom,
+    --`List.enum,
     `List.intersperse,
     `List.intercalate,
     `List.transpose,
-    `List.permutations,
+    --`List.permutations,
     `List.sublists,
-    `List.combinations
+    --`List.combinations
   ]
   for name in listFunctions do
     try
@@ -139,7 +240,7 @@ elab "#extract_aoc_reference" : command => do
     `Array.getD,
     `Array.set,
     `Array.set!,
-    `Array.setD,
+    --`Array.setD,
     `Array.modify,
     `Array.modifyM,
     `Array.map,
@@ -153,13 +254,13 @@ elab "#extract_aoc_reference" : command => do
     `Array.size,
     `Array.isEmpty,
     `Array.toList,
-    `Array.data,
+    --`Array.data,
     `Array.zip,
     `Array.zipWith,
     `Array.unzip,
     `Array.swap,
     `Array.reverse,
-    `Array.sort,
+    --`Array.sort,
     `Array.qsort,
     `Array.insertionSort,
     `Array.binSearch,
@@ -167,7 +268,7 @@ elab "#extract_aoc_reference" : command => do
     `Array.elem,
     `Array.find?,
     `Array.findSome?,
-    `Array.indexOf?,
+    --`Array.indexOf?,
     `Array.any,
     `Array.all,
     `Array.partition,
@@ -189,11 +290,11 @@ elab "#extract_aoc_reference" : command => do
     `Std.HashMap.empty,
     `Std.HashMap.insert,
     `Std.HashMap.insertIfNew,
-    `Std.HashMap.find?,
-    `Std.HashMap.findD,
-    `Std.HashMap.find!,
+    --`Std.HashMap.find?,
+    --`Std.HashMap.findD,
+    --`Std.HashMap.find!,
     `Std.HashMap.contains,
-    `Std.HashMap.remove,
+    --`Std.HashMap.remove,
     `Std.HashMap.size,
     `Std.HashMap.isEmpty,
     `Std.HashMap.toList,
@@ -204,7 +305,7 @@ elab "#extract_aoc_reference" : command => do
     `Std.HashMap.forM,
     `Std.HashMap.map,
     `Std.HashMap.filter,
-    `Std.HashMap.merge,
+    --`Std.HashMap.merge,
     `Std.HashMap.ofList
   ]
   for name in hashMapFunctions do
@@ -220,14 +321,14 @@ elab "#extract_aoc_reference" : command => do
     `Std.HashSet.empty,
     `Std.HashSet.insert,
     `Std.HashSet.contains,
-    `Std.HashSet.remove,
+    --`Std.HashSet.remove,
     `Std.HashSet.size,
     `Std.HashSet.isEmpty,
     `Std.HashSet.toList,
     `Std.HashSet.toArray,
     `Std.HashSet.union,
-    `Std.HashSet.intersect,
-    `Std.HashSet.diff,
+    --`Std.HashSet.intersect,
+    --`Std.HashSet.diff,
     `Std.HashSet.fold,
     `Std.HashSet.forM,
     `Std.HashSet.filter,
@@ -248,22 +349,22 @@ elab "#extract_aoc_reference" : command => do
     `Int.natAbs,
     `Int.gcd,
     `Int.lcm,
-    `Int.mod,
-    `Int.div,
+    --`Int.mod,
+    --`Int.div,
     `Int.ediv,
     `Int.emod,
     `Int.toNat,
     `Int.ofNat,
     `Int.neg,
-    `Int.abs,
+    --`Int.abs,
     `Int.sign,
-    `Int.min,
-    `Int.max,
+    --`Int.min,
+    --`Int.max,
     `Int.pow,
     `Nat.gcd,
     `Nat.lcm,
-    `Nat.factors,
-    `Nat.Prime,
+    --`Nat.factors,
+    --`Nat.Prime,
     `Nat.mod,
     `Nat.div,
     `Nat.pred,
@@ -271,13 +372,13 @@ elab "#extract_aoc_reference" : command => do
     `Nat.min,
     `Nat.max,
     `Nat.pow,
-    `Nat.sqrt,
+    --`Nat.sqrt,
     `Nat.log2,
-    `Nat.factorial,
-    `Nat.choose,
-    `Nat.digits,
+    --`Nat.factorial,
+    --`Nat.choose,
+    --`Nat.digits,
     `Nat.toDigits,
-    `Nat.ofDigits
+    --`Nat.ofDigits
   ]
   for name in numberFunctions do
     try
@@ -301,9 +402,9 @@ elab "#extract_aoc_reference" : command => do
     `Option.toArray,
     `Option.all,
     `Option.any,
-    `Option.zip,
-    `Option.zipWith,
-    `Option.unzip
+    --`Option.zip,
+    --`Option.zipWith,
+    --`Option.unzip
   ]
   for name in optionFunctions do
     try
@@ -344,7 +445,7 @@ elab "#extract_aoc_reference" : command => do
     `Except.tryCatch,
     `Except.orElseLazy,
     `Except.isOk,
-    `Except.isError
+    --`Except.isError
   ]
   for name in exceptFunctions do
     try
@@ -357,12 +458,12 @@ elab "#extract_aoc_reference" : command => do
   logInfo "### State Monad (for memoization)\n```lean"
   let stateFunctions := [
     `StateM,
-    `StateM.run,
-    `StateM.run',
-    `get,
-    `set,
+    --`StateM.run,
+    --`StateM.run',
+    --`get,
+    --`set,
     `modify,
-    `modifyGet,
+    --`modifyGet,
     `StateT.run,
     `StateT.run'
   ]
@@ -380,8 +481,8 @@ elab "#extract_aoc_reference" : command => do
     `Function.comp,
     `Function.const,
     `flip,
-    `curry,
-    `uncurry,
+    --`curry,
+    --`uncurry,
     `Prod.fst,
     `Prod.snd,
     `Prod.swap,
@@ -390,10 +491,10 @@ elab "#extract_aoc_reference" : command => do
     `Sum.isRight,
     `Sum.getLeft?,
     `Sum.getRight?,
-    `toString,
+    --`toString,
     `repr,
-    `dbg_trace,
-    `dbgTrace,
+    --`dbg_trace,
+    --`dbgTrace,
     --`panic!,
     --`assert!,
     --`unreachable!,
