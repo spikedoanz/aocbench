@@ -1,5 +1,7 @@
 from pathlib import Path
 
+
+DEFAULT_PROJECT_NAME = "AocBench"
 # Common paths used across the project
 INPUTS_PATH = Path("./inputs")
 SOLUTIONS_PATH = Path("./solutions")
