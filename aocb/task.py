@@ -60,9 +60,15 @@ LAKE_MANIFEST_TEMPLATE = Template("""{
 }""")
 
 # Template for lakefile.toml
+# batteries are required for hashmap
 LAKEFILE_TEMPLATE = Template("""name = "{{ project_name }}"
 version = "0.1.0"
 defaultTargets = ["{{ project_exe }}"]
+
+[[require]]
+name = "batteries"
+scope = "leanprover-community"
+rev = "main"
 
 [[lean_lib]]
 name = "{{ project_name }}"

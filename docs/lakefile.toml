@@ -1,0 +1,15 @@
+name = "docs"
+version = "0.1.0"
+defaultTargets = ["docs"]
+
+[[require]]
+name = "batteries"
+scope = "leanprover-community"
+rev = "main"
+
+[[lean_lib]]
+name = "Docs"
+
+[[lean_exe]]
+name = "docs"
+root = "Main"
