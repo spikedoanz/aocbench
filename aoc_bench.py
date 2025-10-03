@@ -1,5 +1,4 @@
 import hashlib
-import uuid
 from typing import List
 
 import verifiers as vf
@@ -9,6 +8,7 @@ from aocb.task import (
     SYSTEM_PROMPT,
     compile_reward,
     correctness_reward,
+    create_spec,
     create_task,
     extract_lean4_block,
     load_tasks,
@@ -48,6 +48,7 @@ def load_environment(
             {
                 "question": task["prompt"],  # Changed from "prompt" to "question"
                 "info": {
+                    "task_identifier": task["task_identifier"],
                     "year": task["year"],
                     "day": task["day"],
                 },
@@ -91,13 +92,8 @@ def load_environment(
             if extracted is None:
                 cache[key] = (None, None)
             else:
-                task_id = f"{year}_{day:02d}_{uuid.uuid4()}"
-                create_task(
-                    task_identifier=task_id,
-                    submission=extracted,
-                    year=year,
-                    day=day
-                )
+                spec = create_spec(year, day)
+                task_id = create_task(spec, submission=extracted)
                 compile_result, run_result = run_task(task_id)
                 cache[key] = (compile_result, run_result)
         return cache[key]

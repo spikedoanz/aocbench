@@ -165,18 +165,21 @@ def get_prompt(year: int, day: int) -> str:
 
 
 def create_task(
-    task_identifier: str | None = None,
+    spec: Dict,
     submission: str = MAIN_LEAN_TEMPLATE.render(project_name=DEFAULT_PROJECT_NAME),
-    year: int = 2015,
-    day: int = 14,
 ) -> str:
     """Create a Lean4 project structure with templated files.
+
+    Args:
+        spec: Task specification dict containing task_identifier, year, and day
+        submission: Lean4 code to use as Main.lean
 
     Returns:
         The task_identifier used for the created task.
     """
-    if task_identifier is None:
-        task_identifier = f"{day:02d}_{year}_{uuid.uuid4()}"
+    task_identifier = spec["task_identifier"]
+    year = spec["year"]
+    day = spec["day"]
 
     project_root_dir = CACHE_PATH / "submissions"
     project_name = DEFAULT_PROJECT_NAME
@@ -254,11 +257,17 @@ def run_task(
     return compile_result, run_result
 
 
-def load_task( year:int, day:int) -> Dict: # split?
+def create_spec(year: int, day: int) -> Dict:
+    """Create a task specification with unique identifier.
+
+    Returns a dict containing all information needed to create a task environment.
+    """
+    task_identifier = f"{year}_{day:02d}_{uuid.uuid4()}"
     return {
+        "task_identifier": task_identifier,
         "year": year,
         "day": day,
-        "prompt": get_prompt(year,day)
+        "prompt": get_prompt(year, day)
     }
 
 def load_tasks(
@@ -266,7 +275,7 @@ def load_tasks(
     days: List[int] = list(range(1, 26)),
 ) -> List[Dict]:
     targets = product(years, days)
-    return [load_task(year, day) for year, day in targets]
+    return [create_spec(year, day) for year, day in targets]
 
 def extract_lean4_block(text: str) -> str|None:
     """Extract content from ```lean4 ``` code block."""
@@ -327,13 +336,12 @@ def correctness_reward(
 
 
 if __name__ == "__main__":
-    task_id = create_task()
+    spec = create_spec(2015, 14)
+    task_id = create_task(spec)
     print(f"Created task: {task_id}")
     compile_result, run_result = run_task(task_id)
     print("Compile result:", compile_result)
     print("Run result:", run_result)
     print(compile_reward(compile_result))
     print(correctness_reward(2015, 14, run_result))
-
-#if __name__ == "__main__":
-#    print(extract_lean4_block(load_task(2015,1)['content']))
+    print(spec["task_identifier"])
