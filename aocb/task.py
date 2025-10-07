@@ -262,7 +262,7 @@ def create_spec(year: int, day: int) -> Dict:
 
     Returns a dict containing all information needed to create a task environment.
     """
-    task_identifier = f"{year}_{day:02d}_{uuid.uuid4()}"
+    task_identifier = f"{year}_{day:02d}_{str(uuid.uuid4())}"
     return {
         "task_identifier": task_identifier,
         "year": year,

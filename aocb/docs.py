@@ -238,5 +238,9 @@ Sum.getRight? (α : Type u_1) (β : Type u_2) (a._@._internal._hyg.0 : α ⊕ β
 repr (α : Type u_1) (a : α) : Format
 Decidable.decide (p : Prop) : Bool
 Inhabited.default (α : Sort u) : α
+
+
+Note: if you decide to use any operation that isn't in this list, it is likely that your solution
+will fail to compile.
 ```
 """
