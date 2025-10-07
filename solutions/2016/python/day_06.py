@@ -1,7 +1,6 @@
 from collections import Counter
 
-with open('./inputs/2016_06.txt', 'r') as infile:
-    noise = infile.readlines()
+noise = open("inputs/2016_06.txt").readlines()
 
 columns = (''.join(column) for column in zip(*noise))
 
@@ -13,8 +12,5 @@ for column in columns:
     first_solution += most
     second_solution += least
 
-print("The message usually consists of the most frequent letters....")
-print("Then it must be:", first_solution)
-print("....")
-print("Or is it the least frequent letters? I never know....")
-print("It might be then:", second_solution)
+print(first_solution)
+print(second_solution)

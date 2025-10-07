@@ -18,9 +18,5 @@ def translate_asembunny(c_val):
     return a
 
 
-print("Well, this should be quick....")
-print("Initializing all registers with 0. Firing the code.")
-print(f"The end value of A register is: {translate_asembunny(c_val=0)}")
-print("....")
-print("What? The starting value for C register is 1?")
-print(f"Then the end value of A register is: {translate_asembunny(c_val=1)}")
+print(translate_asembunny(c_val=0))
+print(translate_asembunny(c_val=1))

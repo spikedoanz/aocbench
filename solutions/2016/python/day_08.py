@@ -1,8 +1,7 @@
 import numpy as np
 # import matplotlib.pyplot as plt
 
-with open('./inputs/2016_08.txt', 'r') as infile:
-    instructions = infile.read().split('\n')
+instructions = open("inputs/2016_08.txt").read().split('\n')
 
 lcd = np.zeros((6, 50))
 
@@ -19,9 +18,7 @@ for line in instructions:
         else:
             lcd[:, pos] = np.roll(lcd[:, pos], shift)
 
-print('Oh, look at all those {:0.0f} blinking lights!'.format(np.sum(lcd)))
-print('....')
-print('If I squint my eyes, I might be able to read the code from the screen....\n')
+print(int(np.sum(lcd)))
 print('\n'.join(' '.join('#' if on else ' ' for on in line) for line in lcd))
 
 # plt.imshow(lcd, cmap='viridis')

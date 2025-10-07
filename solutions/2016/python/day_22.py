@@ -1,8 +1,7 @@
 import re
 import numpy as np
 
-with open('./inputs/2016_22.txt', 'r') as infile:
-    lines = infile.read().split('\n')
+lines = open("inputs/2016_22.txt").read().split('\n')
 
 avail = []
 used = []
@@ -25,23 +24,8 @@ grid[0][-1] = 'G'
 grid[0][0] = 'F'
 
 
-print("Let's examine top 10 disks regarding free space:")
-print(sorted(avail, reverse=True)[:10])
-print("And let's see 10 disks with the least amount of data:")
-print(sorted(used)[:10])
-print("This means that only one disk can be used as a 'reciever'.")
-
 uss = np.array(used)
-print(f"There are {sum((uss <= 94) & (uss > 0))} viable pairs of nodes.")
-print('....')
-
-print('I should plot the map of this storage cluster!')
-for line in grid:
-    print(''.join(line))
-print("Now I see it, it's quite easy, I need to bypass this wall, "
-      "then go to the top right, and then it is just repeat repeat repeat "
-      "until I get to top-left corner.")
-
+first_solution = sum((uss <= 94) & (uss > 0))
 
 start = (len(grid)-1, grid[-1].index('_'))
 wall = (len(grid)-3, grid[-3].index('#')-1)
@@ -57,4 +41,5 @@ steps = get_manhattan(start, wall)
 steps += get_manhattan(wall, goal)
 steps += 5 * (goal[1] - 1)
 
-print(f'And all that would be {steps} steps.')
+print(first_solution)
+print(steps)

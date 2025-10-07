@@ -1,5 +1,4 @@
-with open('./inputs/2016_21.txt', 'r') as infile:
-    INSTRUCTIONS = infile.read().split('\n')
+INSTRUCTIONS = open("inputs/2016_21.txt").read().split('\n')
 
 
 class Scrambler:
@@ -87,8 +86,5 @@ hashed = list('fbgdceah')
 first_part = Scrambler(plain).scramble()
 second_part = Scrambler(hashed).unscramble()
 
-print("OK, I have scrambling instructions in front of me, let's try this.")
-print(f'The scrambled version of "abcdefgh" is: {first_part}.')
-print('....')
-print('This works, but I need to unscramble "fbgdceah".')
-print(f'This is {second_part} in plain text.')
+print(first_part)
+print(second_part)

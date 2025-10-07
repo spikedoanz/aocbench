@@ -29,8 +29,5 @@ def find_keys(second_part=False):
     return sorted(valid_keys)[63]
 
 
-print("I need to contact Santa, and I need MD5 keys for that.")
-print(f"He said to use 64th key, which is {find_keys()}.")
-print("....")
-print("Wait, he said to encript this 2016 times!")
-print(f"Then the 64th key is {find_keys('second')}.")
+print(find_keys())
+print(find_keys('second'))

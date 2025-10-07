@@ -1,5 +1,4 @@
-with open('./inputs/2016_01.txt', 'r') as infile:
-    directions = infile.readline().split(', ')
+directions = open("inputs/2016_01.txt").readline().split(', ')
 
 ROTATION = {
     'L': 1j,
@@ -10,7 +9,7 @@ current_direction = 1j
 location = 0+0j
 
 visited_locations = set()
-passed_twice = False
+part2 = None
 
 
 def find_manhattan(loc):
@@ -23,14 +22,10 @@ for instruction in directions:
 
     for _ in range(dist):
         location += current_direction
-        if not passed_twice and location in visited_locations:
-            print("This looks familiar! "
-                  f"I must have been at {location} before!")
-            print("The distance from the start is:", find_manhattan(location))
-            passed_twice = True
+        if part2 is None and location in visited_locations:
+            part2 = find_manhattan(location)
         else:
             visited_locations.add(location)
 
-print('....')
-print("Ok, I've come to the end of your instructions and I'm at:", location)
+print(part2)
 print(find_manhattan(location))

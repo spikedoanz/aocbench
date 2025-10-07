@@ -1,7 +1,6 @@
 from collections import defaultdict
 
-with open('./inputs/2016_10.txt', 'r') as infile:
-    instructions = infile.read().split('\n')
+instructions = open("inputs/2016_10.txt").read().split('\n')
 
 initial = [line.split() for line in instructions if line.startswith('value')]
 commands = [line.split() for line in instructions if not line.startswith('value')]
@@ -46,8 +45,5 @@ while stack:
 
 a, b, c = (outputs[i][0] for i in '012')
 
-
-print(f"I'm Bot {wanted_bot}, and I'm responsible for microchips 17 and 61.")
-print('....')
-print(f"Outputs zero, one, and two have values: {a}, {b}, and {c}.")
-print(f"Did you know that if you multiply them, you get {a*b*c}?")
+print(wanted_bot)
+print(a*b*c)

@@ -1,7 +1,6 @@
 import re
 
-with open('./inputs/2016_09.txt', 'r') as infile:
-    compressed = infile.read()
+compressed = open("inputs/2016_09.txt").read()
 
 pattern = re.compile(r'\((\d+)x(\d+)\)')
 
@@ -19,8 +18,5 @@ def unzip(s, second_part=False):
             + unzip(s[start+length:], second_part))
 
 
-print("Let's do a quick decompression of this file....")
-print(f"Its decompressed size is {unzip(compressed)} characters.")
-print('....')
-print("Hmmm, this still looks compressed. Let's decompress it fully.")
-print(f"Now it has {unzip(compressed, second_part=True)} characters.")
+print(unzip(compressed))
+print(unzip(compressed, second_part=True))

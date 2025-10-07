@@ -1,5 +1,4 @@
-with open('./inputs/2016_20.txt', 'r') as infile:
-    addresses = infile.read().split('\n')
+addresses = open("inputs/2016_20.txt").read().split('\n')
 
 ips = sorted([tuple(map(int, address.split('-'))) for address in addresses])
 
@@ -20,7 +19,5 @@ def find_lowest(ips):
 
 first, second = find_lowest(ips)
 
-print("Let me search from the beginning and find first non-blocked IP")
-print(f"That's: {first}.")
-print("....")
-print(f"But there are in total {second} non-blocked IPs.")
+print(first)
+print(second)

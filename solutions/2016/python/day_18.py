@@ -1,5 +1,4 @@
-with open('./inputs/2016_18.txt', 'r') as infile:
-    first_row = infile.read()
+first_row = open("inputs/2016_18.txt").read()
 
 
 def count_safes(row, total_lines):
@@ -17,8 +16,5 @@ def count_safes(row, total_lines):
 
 first, second = count_safes(first_row, 400000)
 
-print("Oh, so many traps here! Let me make 40 steps and count safe tiles.")
-print(f"There are about {first} tiles here.")
-print("....")
-print("This room is 400,000 steps long?! What a large room!")
-print(f"And there are {second} safe tiles in total.")
+print(first)
+print(second)

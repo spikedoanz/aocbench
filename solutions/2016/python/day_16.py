@@ -20,8 +20,5 @@ def create_checksum(data):
 first = create_checksum(fill_disk(START, DISK_1))
 second = create_checksum(fill_disk(START, DISK_2))
 
-print("Let's fill the disk no. 1 with the 'random' data.")
-print("The checksum is:", first)
-print("....")
-print("Disk 2 is so much bigger!")
-print("Its checksum is", second)
+print(first)
+print(second)

@@ -33,9 +33,5 @@ def find_vault():
 
 first, second = find_vault()
 
-print("Let's unlock these doors and find the vault.")
-print(f"It's easy, I just need to go like this: {first}.")
-print("....")
-print("That was too easy, let's spend some more time here.")
-print("The longest I was able to walk here and "
-      f"still find the vault is {second} steps.")
+print(first)
+print(second)

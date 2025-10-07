@@ -1,6 +1,5 @@
 def execute(a):
-    with open("./inputs/2016_25.txt", 'r') as infile:
-        instructions = infile.read().splitlines()
+    instructions = open("inputs/2016_25.txt").read().splitlines()
 
     register = {'a': a, 'b': 0, 'c': 0, 'd': 0}
     line = 0
@@ -45,5 +44,4 @@ while True:
         break
     i += 1
 
-print("Let me try every number, starting from zero, brute forcing it.")
-print("The number I was looking for is:", i)
+print(i)

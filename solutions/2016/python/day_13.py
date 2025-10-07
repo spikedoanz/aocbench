@@ -30,8 +30,5 @@ def run_through_maze(second_part=False):
                 que.append(((nx, ny), steps+1))
 
 
-print("I'm really good with mazes!")
-print(f"I bet I can find cubicle {GOAL} in {run_through_maze()} steps!")
-print("....")
-print("Give me some time, and in just 50 steps from the start "
-      f"I'll visit {run_through_maze('second')} different cubicles!")
+print(run_through_maze())
+print(run_through_maze('second'))

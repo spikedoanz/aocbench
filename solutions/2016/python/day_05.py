@@ -19,6 +19,5 @@ while available_positions:
             available_positions.remove(md5_hex[5])
     i += 1
 
-print("The password for a first door is:", first_password)
-print('....')
-print("The password for a second door is:", ''.join(second_password))
+print(first_password)
+print(''.join(second_password))

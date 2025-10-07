@@ -1,5 +1,4 @@
-with open('./inputs/2016_04.txt', 'r') as infile:
-    all_rooms = infile.read().splitlines()
+all_rooms = open("inputs/2016_04.txt").read().splitlines()
 
 rooms = ((room[:-11].replace('-', ''),
           int(room[-10:-7]),
@@ -26,8 +25,5 @@ def find_rooms():
 
 total, (sector, name) = find_rooms()
 
-print("Rules for decoding this are too easy for me.")
-print("I'll calculate the sum of all sectors of real rooms just for fun.")
-print(f"The sum is: {total}")
-print("....")
-print(f"Oh, look at this room called '{name}' at sector {sector}!")
+print(total)
+print(sector)
