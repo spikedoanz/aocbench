@@ -30,5 +30,5 @@ for instruction in directions:
         else:
             visited_locations.add(location)
 
-print(part2)
 print(find_manhattan(location))
+print(part2)

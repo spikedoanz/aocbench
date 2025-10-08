@@ -32,9 +32,5 @@ def execute(c):
     return register['a']
 
 
-print("Well, this should be quick....")
-print("Initializing all registers with 0. Firing the code.")
-print(f"The end value of A register is: {execute(c=0)}")
-print("....")
-print("What? The starting value for C register is 1?")
-# print(f"Then the end value of A register is: {execute(c=1)}")
+print(execute(c=0))
+print(execute(c=1))
