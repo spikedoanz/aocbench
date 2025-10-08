@@ -11,7 +11,10 @@ spells = {
     Spell('recharge', 229, 0, 0, 0, 101, 5)
 }
 
-data = open("inputs/2015_22.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_22.txt")).read().splitlines()
 BOSS_HP = int(data[0].split(": ")[1])
 BOSS_DMG = int(data[1].split(": ")[1])
 

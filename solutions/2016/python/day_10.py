@@ -1,6 +1,9 @@
 from collections import defaultdict
 
-instructions = open("inputs/2016_10.txt").read().split('\n')
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+instructions = open(os.path.join(INPUT_DIR, "2016_10.txt")).read().split('\n')
 
 initial = [line.split() for line in instructions if line.startswith('value')]
 commands = [line.split() for line in instructions if not line.startswith('value')]

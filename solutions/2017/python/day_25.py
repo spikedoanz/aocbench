@@ -1,5 +1,8 @@
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
 states = {}
-lines_input = open("inputs/2017_25.txt").readlines()
+lines_input = open(os.path.join(INPUT_DIR, "2017_25.txt")).readlines()
 state = lines_input[0].strip()[-2]
 iterations = int(lines_input[1].strip().split()[-2])
 

@@ -1,4 +1,7 @@
-all_rooms = open("inputs/2016_04.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+all_rooms = open(os.path.join(INPUT_DIR, "2016_04.txt")).read().splitlines()
 
 rooms = ((room[:-11].replace('-', ''),
           int(room[-10:-7]),

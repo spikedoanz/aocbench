@@ -1,6 +1,9 @@
 from hashlib import md5
 
-SALT = open("inputs/2016_14.txt").read().strip()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+SALT = open(os.path.join(INPUT_DIR, "2016_14.txt")).read().strip()
 
 
 def find_keys(second_part=False):

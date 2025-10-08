@@ -7,8 +7,11 @@ def tick(m, cx, cy, dx, dy, dc):
     return cx + dx, cy + dy, dx, dy
 
 
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
 m, w, h = {}, 0, 0
-for y, line in enumerate(open("inputs/2017_22.txt").readlines()):
+for y, line in enumerate(open(os.path.join(INPUT_DIR, "2017_22.txt")).readlines()):
     for x, c in enumerate(line.strip()):
         m[(x, y)] = int(c == '#')*2
         w, h = max(w, x), max(h, y)

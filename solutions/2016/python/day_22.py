@@ -1,7 +1,10 @@
 import re
 import numpy as np
 
-lines = open("inputs/2016_22.txt").read().split('\n')
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+lines = open(os.path.join(INPUT_DIR, "2016_22.txt")).read().split('\n')
 
 avail = []
 used = []

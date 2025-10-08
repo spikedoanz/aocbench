@@ -1,4 +1,7 @@
-ls = [x.strip().split() for x in open("inputs/2017_08.txt").readlines()]
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+ls = [x.strip().split() for x in open(os.path.join(INPUT_DIR, "2017_08.txt")).readlines()]
 
 o = {'==': 'eq', '!=': 'ne', '<=': 'le', '>=': 'ge', '<': 'lt', '>': 'gt'}
 d, h = {}, 0

@@ -8,7 +8,10 @@ def solve(data, players=1):
     return len(visited)
 
 
-data = open("inputs/2015_03.txt").readline()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_03.txt")).readline()
 
 print(solve(data))
 print(solve(data, 2))

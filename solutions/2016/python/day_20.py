@@ -1,4 +1,7 @@
-addresses = open("inputs/2016_20.txt").read().split('\n')
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+addresses = open(os.path.join(INPUT_DIR, "2016_20.txt")).read().split('\n')
 
 ips = sorted([tuple(map(int, address.split('-'))) for address in addresses])
 

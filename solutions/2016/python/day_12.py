@@ -1,4 +1,7 @@
-data = open("inputs/2016_12.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2016_12.txt")).read().splitlines()
 
 def translate_asembunny(c_val):
     # Extracted constants from the input file

@@ -1,4 +1,7 @@
-d = [int(i) for i in open("inputs/2017_06.txt").readline().strip().split()]
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+d = [int(i) for i in open(os.path.join(INPUT_DIR, "2017_06.txt")).readline().strip().split()]
 
 for _ in [0]*2:
     s = set()

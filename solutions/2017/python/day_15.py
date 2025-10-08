@@ -1,6 +1,9 @@
 from itertools import islice
 
-d = [int(x.strip().split()[-1]) for x in open("inputs/2017_15.txt").readlines()]
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+d = [int(x.strip().split()[-1]) for x in open(os.path.join(INPUT_DIR, "2017_15.txt")).readlines()]
 a, b = (d[0], 16807, 4), (d[1], 48271, 8)
 
 

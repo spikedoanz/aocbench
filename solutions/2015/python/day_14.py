@@ -19,7 +19,10 @@ def part_2(data):
     return max(scores)
 
 
-data = list(map(parse_line, open("inputs/2015_14.txt").read().splitlines()))
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = list(map(parse_line, open(os.path.join(INPUT_DIR, "2015_14.txt")).read().splitlines()))
 
 print(max(calc_dist(*reindeer) for reindeer in data))
 print(part_2(data))

@@ -8,7 +8,10 @@ is_nice_2 = lambda s: (
     any(a == b for a, b in zip(s, s[2:])))
 
 
-data = open("inputs/2015_05.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_05.txt")).read().splitlines()
 
 print(sum(map(is_nice_1, data)))
 print(sum(map(is_nice_2, data)))

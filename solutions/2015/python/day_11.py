@@ -19,7 +19,10 @@ def next_valid(pw):
                 has_two_pairs(pw))
 
 
-INPUT = open("inputs/2015_11.txt").read().strip()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT = open(os.path.join(INPUT_DIR, "2015_11.txt")).read().strip()
 valid_passwords = next_valid(INPUT)
 
 print(next(valid_passwords))

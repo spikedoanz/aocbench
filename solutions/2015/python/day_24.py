@@ -12,7 +12,10 @@ def solve(data, groups):
     return min(possible_solutions)[1]
 
 
-data = sorted(map(int, open("inputs/2015_24.txt").read().splitlines()), reverse=True)
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = sorted(map(int, open(os.path.join(INPUT_DIR, "2015_24.txt")).read().splitlines()), reverse=True)
 
 print(solve(data, 3))
 print(solve(data, 4))

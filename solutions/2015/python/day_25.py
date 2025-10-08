@@ -1,10 +1,12 @@
+import os
 import re
 
 FIRST = 20151125
 BASE = 252533
 MOD = 33554393
 
-data = open("inputs/2015_25.txt").read()
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_25.txt")).read()
 ROW, COL = map(int, re.findall(r'\d+', data))
 
 

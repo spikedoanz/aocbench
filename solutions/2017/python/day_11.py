@@ -1,4 +1,7 @@
-data = open("inputs/2017_11.txt").readline().strip().split(',')
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2017_11.txt")).readline().strip().split(',')
 
 d = lambda x, y: max(abs(x), (abs(x)+1)//2+abs(y))
 x = y = m = 0

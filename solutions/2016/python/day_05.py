@@ -1,6 +1,9 @@
 import hashlib
 
-DOOR_ID = open("inputs/2016_05.txt").read().strip()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+DOOR_ID = open(os.path.join(INPUT_DIR, "2016_05.txt")).read().strip()
 
 first_password = ''
 second_password = [''] * 8

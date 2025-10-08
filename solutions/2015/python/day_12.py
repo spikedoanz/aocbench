@@ -15,7 +15,10 @@ def find_sum(jason):
     else: return 0
 
 
-data = open("inputs/2015_12.txt").read()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_12.txt")).read()
 j = json.loads(data)
 
 print(sum(map(int, re.findall(numbers, data))))

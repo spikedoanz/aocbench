@@ -1,6 +1,9 @@
 from collections import Counter
 
-noise = open("inputs/2016_06.txt").readlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+noise = open(os.path.join(INPUT_DIR, "2016_06.txt")).readlines()
 
 columns = (''.join(column) for column in zip(*noise))
 

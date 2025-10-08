@@ -1,4 +1,7 @@
-INSTRUCTIONS = open("inputs/2016_21.txt").read().split('\n')
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INSTRUCTIONS = open(os.path.join(INPUT_DIR, "2016_21.txt")).read().split('\n')
 
 
 class Scrambler:

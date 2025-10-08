@@ -1,6 +1,9 @@
 from collections import deque
 
-INPUT = int(open("inputs/2016_13.txt").read().strip())
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT = int(open(os.path.join(INPUT_DIR, "2016_13.txt")).read().strip())
 GOAL = (31, 39)
 START = (1, 1)
 DELTAS = ((1, 0), (-1, 0), (0, 1), (0, -1))

@@ -28,7 +28,10 @@ def part_2(molecule):
     return elements - 2*rn - 2*y - 1
 
 
-data = open("inputs/2015_19.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_19.txt")).read().splitlines()
 molecule = data[-1]
 replacements = generate_replacements(data)
 

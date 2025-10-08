@@ -1,4 +1,7 @@
-d = open("inputs/2017_16.txt").readline().strip().split(',')
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+d = open(os.path.join(INPUT_DIR, "2017_16.txt")).readline().strip().split(',')
 s = list('abcdefghijklmnop')
 p = s[:]
 q = []

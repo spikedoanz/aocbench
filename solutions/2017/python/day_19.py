@@ -1,7 +1,10 @@
 import re
 
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
 data = [[c if c != ' ' else 0 for c in x.strip('\n')]
-        for x in open("inputs/2017_19.txt").readlines()]
+        for x in open(os.path.join(INPUT_DIR, "2017_19.txt")).readlines()]
 
 dx, dy = 0, 1
 y = 0

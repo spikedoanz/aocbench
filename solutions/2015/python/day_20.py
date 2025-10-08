@@ -7,6 +7,9 @@ def solve(target, limit):
             return i
 
 
-INPUT = int(open("inputs/2015_20.txt").read().strip())
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT = int(open(os.path.join(INPUT_DIR, "2015_20.txt")).read().strip())
 print(solve(INPUT//10, INPUT//10))
 print(solve(INPUT//11, 50))

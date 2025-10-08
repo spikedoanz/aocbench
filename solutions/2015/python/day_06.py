@@ -22,7 +22,10 @@ def solve(data, grid_size=range(1000)):
     return sum(map(sum, grid1)), sum(map(sum, grid2))
 
 
-data = map(parse_line, open("inputs/2015_06.txt").read().splitlines())
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = map(parse_line, open(os.path.join(INPUT_DIR, "2015_06.txt")).read().splitlines())
 pt1, pt2 = solve(data)
 print(pt1)
 print(pt2)

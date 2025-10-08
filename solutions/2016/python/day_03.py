@@ -1,6 +1,9 @@
 from itertools import chain
 
-puzzle = open("inputs/2016_03.txt").readlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+puzzle = open(os.path.join(INPUT_DIR, "2016_03.txt")).readlines()
 
 horizontal = [[int(value) for value in row.split()] for row in puzzle]
 vertical = list(chain.from_iterable(zip(*horizontal)))

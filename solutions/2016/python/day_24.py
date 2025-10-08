@@ -1,7 +1,10 @@
 from collections import deque
 from itertools import permutations
 
-maze = open("inputs/2016_24.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+maze = open(os.path.join(INPUT_DIR, "2016_24.txt")).read().splitlines()
 
 
 def bfs(start, goal):

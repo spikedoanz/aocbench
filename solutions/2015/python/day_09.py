@@ -19,7 +19,10 @@ solve = lambda func: (
          for route in permutations(locations)))
 
 
-data = map(parse_line, open("inputs/2015_09.txt").read().splitlines())
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = map(parse_line, open(os.path.join(INPUT_DIR, "2015_09.txt")).read().splitlines())
 locations, relations = create_relations(data)
 
 print(solve(min))

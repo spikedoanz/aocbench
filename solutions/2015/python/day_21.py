@@ -3,7 +3,10 @@ armors = [(0, 0, 0), (13, 0, 1), (31, 0, 2), (53, 0, 3), (75, 0, 4), (102, 0, 5)
 rings = [(0, 0, 0), (0, 0, 0), (25, 1, 0), (50, 2, 0),
          (100, 3, 0), (20, 0, 1), (40, 0, 2), (80, 0, 3)]
 
-data = open("inputs/2015_21.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_21.txt")).read().splitlines()
 opponent = (int(data[0].split(": ")[1]), int(data[1].split(": ")[1]), int(data[2].split(": ")[1]))
 
 

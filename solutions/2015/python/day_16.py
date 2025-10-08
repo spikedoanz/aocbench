@@ -28,7 +28,10 @@ solve = lambda data, func: next(i for i, line in enumerate(data, 1)
                                 if all(func(*p) for p in line))
 
 
-data = list(map(parse_line, open("inputs/2015_16.txt").read().splitlines()))
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = list(map(parse_line, open(os.path.join(INPUT_DIR, "2015_16.txt")).read().splitlines()))
 
 print(solve(data, check_1))
 print(solve(data, check_2))

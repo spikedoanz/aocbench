@@ -1,4 +1,7 @@
-w = open("inputs/2017_14.txt").readline().strip().encode()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+w = open(os.path.join(INPUT_DIR, "2017_14.txt")).readline().strip().encode()
 
 
 def xs(g):

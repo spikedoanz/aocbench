@@ -1,6 +1,9 @@
 import re
 
-compressed = open("inputs/2016_09.txt").read()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+compressed = open(os.path.join(INPUT_DIR, "2016_09.txt")).read()
 
 pattern = re.compile(r'\((\d+)x(\d+)\)')
 

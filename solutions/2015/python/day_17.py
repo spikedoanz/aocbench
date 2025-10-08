@@ -10,7 +10,10 @@ def solve(data):
     return used_containers
 
 
-data = sorted(map(int, open("inputs/2015_17.txt").read().splitlines()), reverse=True)
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = sorted(map(int, open(os.path.join(INPUT_DIR, "2015_17.txt")).read().splitlines()), reverse=True)
 
 combinations = solve(data)
 print(len(combinations))

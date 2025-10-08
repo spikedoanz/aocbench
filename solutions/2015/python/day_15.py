@@ -27,7 +27,10 @@ def find_best_cookie(properties):
     return pt1, pt2
 
 
-data = parse_data(open("inputs/2015_15.txt").read().splitlines())
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = parse_data(open(os.path.join(INPUT_DIR, "2015_15.txt")).read().splitlines())
 pt1, pt2 = find_best_cookie(data)
 print(pt1)
 print(pt2)

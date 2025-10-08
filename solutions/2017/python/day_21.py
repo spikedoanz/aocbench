@@ -21,8 +21,11 @@ def iterate(g):
                           for y in range(0, len(g), s)]], [])
 
 
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
 m = {}
-for line in open("inputs/2017_21.txt").readlines():
+for line in open(os.path.join(INPUT_DIR, "2017_21.txt")).readlines():
     k, r = [parse(x) for x in line.strip().split(' => ')]
     m[key(k)] = r
 

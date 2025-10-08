@@ -43,7 +43,10 @@ def run_program_fast(a=0):
     
     return regs[1]
 
-data = open("inputs/2015_23.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_23.txt")).read().splitlines()
 instructions = compile_program(data)
 print(run_program_fast(0))
 print(run_program_fast(1))

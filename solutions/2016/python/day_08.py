@@ -1,7 +1,10 @@
 import numpy as np
 # import matplotlib.pyplot as plt
 
-instructions = open("inputs/2016_08.txt").read().split('\n')
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+instructions = open(os.path.join(INPUT_DIR, "2016_08.txt")).read().split('\n')
 
 lcd = np.zeros((6, 50))
 

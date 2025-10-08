@@ -1,6 +1,9 @@
 import numpy as np
 
-INPUT = int(open("inputs/2016_19.txt").read().strip())
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT = int(open(os.path.join(INPUT_DIR, "2016_19.txt")).read().strip())
 
 def find_elf(elves):
     if len(elves) <= 2:

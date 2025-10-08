@@ -1,5 +1,8 @@
 from math import sqrt
-data = int(open("inputs/2017_03.txt").readline().strip())
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = int(open(os.path.join(INPUT_DIR, "2017_03.txt")).readline().strip())
 
 
 def pos(index):

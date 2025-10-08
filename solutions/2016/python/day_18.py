@@ -1,4 +1,7 @@
-first_row = open("inputs/2016_18.txt").read()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+first_row = open(os.path.join(INPUT_DIR, "2016_18.txt")).read()
 
 
 def count_safes(row, total_lines):

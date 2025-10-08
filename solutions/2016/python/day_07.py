@@ -1,6 +1,9 @@
 import re
 
-addresses = open("inputs/2016_07.txt").readlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+addresses = open(os.path.join(INPUT_DIR, "2016_07.txt")).readlines()
 
 addresses_separated = [re.split(r'\[|\]', line.strip()) for line in addresses]
 

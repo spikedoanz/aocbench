@@ -1,4 +1,7 @@
-directions = open("inputs/2016_01.txt").readline().split(', ')
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+directions = open(os.path.join(INPUT_DIR, "2016_01.txt")).readline().split(', ')
 
 ROTATION = {
     'L': 1j,

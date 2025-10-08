@@ -1,4 +1,7 @@
-lines = [x.strip() for x in open("inputs/2017_20.txt").readlines()]
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+lines = [x.strip() for x in open(os.path.join(INPUT_DIR, "2017_20.txt")).readlines()]
 
 
 def tick(ps):

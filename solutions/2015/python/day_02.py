@@ -1,7 +1,10 @@
 from itertools import starmap
 
 
-data = open("inputs/2015_02.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_02.txt")).read().splitlines()
 dimensions = [sorted(map(int, line.split('x'))) for line in data]
 
 paper =  lambda a, b, c: 3*a*b + 2*b*c + 2*c*a

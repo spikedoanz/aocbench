@@ -1,5 +1,9 @@
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+
 def execute(a):
-    instructions = open("inputs/2016_25.txt").read().splitlines()
+    instructions = open(os.path.join(INPUT_DIR, "2016_25.txt")).read().splitlines()
 
     register = {'a': a, 'b': 0, 'c': 0, 'd': 0}
     line = 0

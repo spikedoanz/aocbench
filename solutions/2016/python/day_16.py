@@ -1,4 +1,7 @@
-START = list(map(int, open("inputs/2016_16.txt").read().strip()))
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+START = list(map(int, open(os.path.join(INPUT_DIR, "2016_16.txt")).read().strip()))
 DISK_1 = 272
 DISK_2 = 35651584
 

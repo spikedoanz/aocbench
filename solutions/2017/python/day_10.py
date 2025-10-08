@@ -1,4 +1,7 @@
-data = open("inputs/2017_10.txt").readline().strip()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2017_10.txt")).readline().strip()
 
 
 def k(d, r=1):

@@ -26,8 +26,11 @@ def play(data, steps, part=1):
     return sum(map(sum, data))
 
 
+import os
+
 SIZE = 100
-data = load_data("inputs/2015_18.txt")
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = load_data(os.path.join(INPUT_DIR, "2015_18.txt"))
 
 print(play(data, 100))
 print(play(data, 100, part=2))

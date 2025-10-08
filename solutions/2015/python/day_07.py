@@ -17,7 +17,10 @@ def get_value(wires, wire='a', b=None):
     return aux(wire)
 
 
-data = open("inputs/2015_07.txt").read().splitlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = open(os.path.join(INPUT_DIR, "2015_07.txt")).read().splitlines()
 wires = parse_input(data)
 
 print(first := get_value(wires))

@@ -1,4 +1,7 @@
-d = [tuple(int(y) for y in x.strip().split('/')) for x in open("inputs/2017_24.txt").readlines()]
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+d = [tuple(int(y) for y in x.strip().split('/')) for x in open(os.path.join(INPUT_DIR, "2017_24.txt")).readlines()]
 
 
 def build(start, rem, maxlen=0, score=0):

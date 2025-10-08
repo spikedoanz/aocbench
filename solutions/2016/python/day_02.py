@@ -1,4 +1,7 @@
-puzzle = open("inputs/2016_02.txt").readlines()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+puzzle = open(os.path.join(INPUT_DIR, "2016_02.txt")).readlines()
 
 DIRECTIONS = {
     'R': 1,

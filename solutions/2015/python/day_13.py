@@ -18,7 +18,10 @@ solve = lambda people, rels: (
         for pp in permutations(people)))
 
 
-data = map(parse_line, open("inputs/2015_13.txt").read().splitlines())
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+data = map(parse_line, open(os.path.join(INPUT_DIR, "2015_13.txt")).read().splitlines())
 relations = create_relations(data)
 people = set(relations.keys())
 

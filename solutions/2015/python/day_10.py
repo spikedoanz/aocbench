@@ -17,7 +17,10 @@ def solve(digits, times):
     return digits
 
 
-INPUT = open("inputs/2015_10.txt").read().strip()
+import os
+
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT = open(os.path.join(INPUT_DIR, "2015_10.txt")).read().strip()
 
 print(len(first := solve(INPUT, 40)))
 print(len(solve(first, 10)))
