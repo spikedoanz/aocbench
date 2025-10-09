@@ -1,0 +1,304 @@
+import os
+import re
+import subprocess
+import time
+from pathlib import Path
+from typing import Optional
+
+import click
+from aocd import submit as aocd_submit
+
+from aocb.task import (
+    create_spec,
+    get_problem_path,
+    get_input_path,
+    path_to_str,
+    validate_year_day,
+    LAKE_MANIFEST_TEMPLATE,
+    LAKEFILE_TEMPLATE,
+    INPUT_LEAN_TEMPLATE,
+    MAIN_LEAN_TEMPLATE,
+    DEFAULT_PROJECT_NAME,
+)
+from aocb.defaults import AVAILABLE_YEARS, DEFAULT_LAKE_TIMEOUT
+from aocb.download import download_inputs, download_problems
+
+
+@click.group()
+def aocbench():
+    """AOC Bench CLI tool."""
+    pass
+
+
+@aocbench.group()
+def diy():
+    """DIY commands for human solving."""
+    pass
+
+
+@diy.command()
+@click.option('-p', '--path', default='.', help='Target directory for projects')
+@click.option('--year', type=int, help='Specific year to download')
+@click.option('--all', 'all_years', is_flag=True, help='Download all available years')
+def download(path: str, year: Optional[int], all_years: bool):
+    """Download and create Lean4 project stubs for solving AOC problems."""
+
+    # Validate inputs
+    if not year and not all_years:
+        click.echo("Error: Must specify either --year or --all")
+        return
+
+    if year and all_years:
+        click.echo("Error: Cannot specify both --year and --all")
+        return
+
+    # Determine years to process
+    years = AVAILABLE_YEARS if all_years else [year]
+
+    if year and year not in AVAILABLE_YEARS:
+        click.echo(f"Error: Year {year} not in available years: {AVAILABLE_YEARS}")
+        return
+
+    # Ensure inputs and problems are downloaded
+    click.echo("Downloading inputs and problems from AOC...")
+    try:
+        download_inputs()
+        download_problems()
+    except AssertionError as e:
+        click.echo(f"Error: {e}")
+        return
+    except Exception as e:
+        click.echo(f"Error downloading data: {e}")
+        return
+
+    base_path = Path(path).expanduser().resolve()
+    base_path.mkdir(parents=True, exist_ok=True)
+
+    project_name = DEFAULT_PROJECT_NAME
+    project_exe = project_name.lower()
+
+    for yr in years:
+        click.echo(f"\nProcessing year {yr}...")
+        for day in range(1, 26):
+            day_str = f"{day:02d}"
+            day_dir = base_path / str(yr) / f"day_{day_str}"
+
+            # Skip if already exists
+            if day_dir.exists():
+                click.echo(f"  Skipping day {day} (already exists)")
+                continue
+
+            try:
+                # Create directory structure
+                day_dir.mkdir(parents=True, exist_ok=True)
+                (day_dir / project_name).mkdir(exist_ok=True)
+
+                # Get input data
+                input_str = path_to_str(get_input_path(yr, day))
+
+                # Create project files
+                files = [
+                    ("lake-manifest.json", LAKE_MANIFEST_TEMPLATE.render(project_name=project_name)),
+                    ("lakefile.toml", LAKEFILE_TEMPLATE.render(
+                        project_name=project_name,
+                        project_exe=project_exe
+                    )),
+                    (f"{project_name}/Input.lean", INPUT_LEAN_TEMPLATE.render(
+                        project_name=project_name,
+                        input_str=input_str
+                    )),
+                    ("Main.lean", MAIN_LEAN_TEMPLATE.render(project_name=project_name)),
+                ]
+
+                for filepath, content in files:
+                    (day_dir / filepath).write_text(content)
+
+                # Create README.md with problem text
+                part1_path, part2_path = get_problem_path(yr, day)
+                readme_content = f"# Year {yr} - Day {day}\n\n"
+
+                if part1_path.exists():
+                    readme_content += "## Part 1\n\n"
+                    readme_content += path_to_str(part1_path)
+                    readme_content += "\n\n"
+
+                if part2_path.exists() and day != 25:
+                    readme_content += "## Part 2\n\n"
+                    readme_content += path_to_str(part2_path)
+
+                (day_dir / "README.md").write_text(readme_content)
+
+                click.echo(f"  Created day {day}")
+
+            except FileNotFoundError as e:
+                click.echo(f"  Skipping day {day}: {e}")
+            except Exception as e:
+                click.echo(f"  Error creating day {day}: {e}")
+
+
+@diy.command()
+@click.option('-p', '--path', default='.', help='Path to the day directory')
+def submit(path: str):
+    """Build and submit a Lean4 solution to AOC."""
+
+    project_dir = Path(path).expanduser().resolve()
+
+    if not project_dir.exists():
+        click.echo(f"Error: Directory {project_dir} does not exist")
+        return
+
+    # Extract year and day from path structure
+    # Expected: .../YYYY/day_DD/
+    year_match = re.search(r'/(\d{4})/', str(project_dir))
+    day_match = re.search(r'/day_(\d{2})/?$', str(project_dir))
+
+    if not year_match or not day_match:
+        click.echo("Error: Could not determine year/day from path")
+        click.echo("Expected path structure: .../YYYY/day_DD/")
+        return
+
+    year = int(year_match.group(1))
+    day = int(day_match.group(1))
+
+    try:
+        validate_year_day(year, day)
+    except ValueError as e:
+        click.echo(f"Error: {e}")
+        return
+
+    click.echo(f"Building solution for Year {year} Day {day}...")
+
+    # Run lake update (for batteries)
+    try:
+        subprocess.run(
+            ["lake", "update"],
+            cwd=project_dir,
+            capture_output=True,
+            text=True,
+            timeout=DEFAULT_LAKE_TIMEOUT,
+            check=True
+        )
+    except subprocess.CalledProcessError as e:
+        click.echo(f"Error running lake update: {e.stderr}")
+        return
+    except FileNotFoundError:
+        click.echo("Error: 'lake' command not found. Is Lean4 installed?")
+        return
+
+    # Run lake build
+    try:
+        result = subprocess.run(
+            ["lake", "build"],
+            cwd=project_dir,
+            capture_output=True,
+            text=True,
+            timeout=DEFAULT_LAKE_TIMEOUT,
+        )
+
+        if result.returncode != 0:
+            click.echo("Build failed!")
+            click.echo(result.stderr)
+            return
+
+        click.echo("Build successful!")
+
+    except subprocess.TimeoutExpired:
+        click.echo("Error: Build timed out")
+        return
+    except Exception as e:
+        click.echo(f"Error building: {e}")
+        return
+
+    # Run the executable
+    project_exe = DEFAULT_PROJECT_NAME.lower()
+    try:
+        result = subprocess.run(
+            ["lake", "exec", project_exe],
+            cwd=project_dir,
+            capture_output=True,
+            text=True,
+            timeout=DEFAULT_LAKE_TIMEOUT,
+        )
+
+        if result.returncode != 0:
+            click.echo("Execution failed!")
+            click.echo(result.stderr)
+            return
+
+        output = result.stdout.strip()
+        lines = output.split('\n')
+
+        if len(lines) < 1:
+            click.echo("Error: No output from executable")
+            return
+
+        part1_answer = lines[0].strip()
+        part2_answer = lines[1].strip() if len(lines) >= 2 else None
+
+        click.echo(f"\nOutput:")
+        click.echo(f"  Part 1: {part1_answer}")
+        if part2_answer:
+            click.echo(f"  Part 2: {part2_answer}")
+
+    except subprocess.TimeoutExpired:
+        click.echo("Error: Execution timed out")
+        return
+    except Exception as e:
+        click.echo(f"Error running: {e}")
+        return
+
+    # Submit to AOC
+    aoc_session = os.environ.get("AOC_SESSION")
+    if not aoc_session:
+        click.echo("\nWarning: AOC_SESSION not set. Cannot submit to Advent of Code.")
+        click.echo("Set AOC_SESSION environment variable to submit.")
+        return
+
+    click.echo("\nSubmitting to Advent of Code...")
+
+    # Submit part 1
+    if part1_answer:
+        try:
+            click.echo(f"  Submitting Part 1: {part1_answer}")
+            response = aocd_submit(part1_answer, part="a", day=day, year=year)
+            click.echo(f"  Response: {response}")
+            time.sleep(2)  # Rate limiting
+
+            # If part 1 was just solved, re-download problem text to get part 2
+            if "That's the right answer" in str(response):
+                click.echo("  Part 1 correct! Re-downloading problem text for Part 2...")
+                try:
+                    from aocb.download import get_problem_html
+                    part2_path = get_problem_path(year, day)[1]
+                    html_content = get_problem_html(aoc_session, year, day)
+
+                    # Update README
+                    readme_path = project_dir / "README.md"
+                    if readme_path.exists():
+                        readme_content = readme_path.read_text()
+                        if "## Part 2" not in readme_content:
+                            # Parse and add part 2 (simplified - just append)
+                            readme_content += "\n\n## Part 2\n\n(Re-download problems to see Part 2 text)"
+                            readme_path.write_text(readme_content)
+                except Exception as e:
+                    click.echo(f"  Could not update Part 2 text: {e}")
+
+        except Exception as e:
+            click.echo(f"  Error submitting Part 1: {e}")
+            return
+
+    # Submit part 2
+    if part2_answer:
+        try:
+            click.echo(f"  Submitting Part 2: {part2_answer}")
+            response = aocd_submit(part2_answer, part="b", day=day, year=year)
+            click.echo(f"  Response: {response}")
+            time.sleep(2)  # Rate limiting
+        except Exception as e:
+            click.echo(f"  Error submitting Part 2: {e}")
+
+    click.echo("\nDone!")
+
+
+if __name__ == '__main__':
+    aocbench()
