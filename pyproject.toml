@@ -1,7 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "aoc-bench"
-description = "Your environment description here"
-tags = ["placeholder-tag", "train", "eval"]
+name = "aocbench"
+description = "A Lean4 benchmarking environment for Advent of Code problems"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
@@ -14,9 +17,13 @@ dependencies = [
 [project.scripts]
 aocbench = "aocb.cli:aocbench"
 
-[tool.hatchling.build.targets.wheel]
-packages = ["aocb"]
+[tool.setuptools]
+py-modules = []
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aocb*"]
+exclude = ["aoc_bench"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["aoc_bench.py"]
