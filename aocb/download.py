@@ -5,7 +5,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
 from aocd import get_data
-from .defaults import PROBLEMS_HTML_PATH, INPUTS_PATH
+from .defaults import AVAILABLE_YEARS, PROBLEMS_HTML_PATH, INPUTS_PATH
 
 def get_problem_html(session, year, day):
     """Fetch raw HTML for a specific problem using urllib."""
@@ -20,7 +20,7 @@ def download_problems():
     assert aoc_session, "Please set AOC_SESSION environment variable"
     
     days = [i for i in range(1, 26)]
-    years = [i for i in range(2015, 2016)]
+    years = AVAILABLE_YEARS
     root_path = PROBLEMS_HTML_PATH
     root_path.mkdir(parents = True, exist_ok=True)
     

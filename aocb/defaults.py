@@ -15,7 +15,7 @@ PROBLEMS_TXT_PATH = CACHE_PATH / "problems/txt"
 SOLUTIONS_PATH = Path("./solutions")
 
 # Common constants
-AVAILABLE_YEARS = list(range(2015, 2017))
+AVAILABLE_YEARS = list(range(2015, 2018))
 
 # Timeout for lake commands (in seconds)
 DEFAULT_LAKE_TIMEOUT = 60

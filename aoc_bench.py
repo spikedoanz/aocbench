@@ -60,7 +60,7 @@ class AOCBMultiTurnEnv(vf.MultiTurnEnv):
                 self.cache[key] = (compile_result, run_result)
         return self.cache[key]
     
-    def is_completed(self, messages: Messages, state: State, **kwargs) -> bool:
+    async def is_completed(self, messages: Messages, state: State, **kwargs) -> bool:
         """
         Check if the task is completed.
         
@@ -68,12 +68,12 @@ class AOCBMultiTurnEnv(vf.MultiTurnEnv):
         - Maximum turns reached (handled by super())
         - Solution succeeded (all tests passed)
         """
-        if super().is_completed(messages, state, **kwargs):
+        if await super().is_completed(messages, state, **kwargs):
             return True
         
         return state.get("succeeded", False)
     
-    def env_response(self, messages: Messages, state: State, **kwargs) -> Tuple[Messages, State]:
+    async def env_response(self, messages: Messages, state: State, **kwargs) -> Tuple[Messages, State]:
         """
         Generate environment response based on model's code attempt.
         

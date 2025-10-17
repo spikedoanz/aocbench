@@ -300,49 +300,6 @@ def submit(path: str):
 
     click.echo("\nDone!")
 
-@aocbench.command()
-@click.option('--years', type=int, nargs='*', help='Specific years to initialize (default: all available)')
-def init(years: tuple):
-    """Initialize AOC Bench by downloading inputs, problems, and caching solutions."""
-    
-    from aocb.defaults import AVAILABLE_YEARS
-    
-    # Determine which years to process
-    if years:
-        years_to_process = list(years)
-        # Validate years
-        invalid_years = [y for y in years_to_process if y not in AVAILABLE_YEARS]
-        if invalid_years:
-            click.echo(f"Error: Invalid years: {invalid_years}. Available: {AVAILABLE_YEARS}")
-            return
-    else:
-        years_to_process = AVAILABLE_YEARS
-    
-    click.echo("Initializing AOC Bench...")
-    click.echo(f"Processing years: {years_to_process}")
-    
-    # Download inputs and problems
-    click.echo("\nDownloading inputs and problems...")
-    try:
-        download_inputs()
-        download_problems()
-    except AssertionError as e:
-        click.echo(f"Error: {e}")
-        return
-    except Exception as e:
-        click.echo(f"Error downloading data: {e}")
-        return
-    
-    # Cache solutions
-    click.echo("\nCaching solutions...")
-    try:
-        save_answers(years_to_process, list(range(1, 26)))
-    except Exception as e:
-        click.echo(f"Error caching solutions: {e}")
-        return
-    
-    click.echo("\nInitialization complete!")
-
 
 if __name__ == '__main__':
     aocbench()
