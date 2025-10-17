@@ -1,10 +1,20 @@
 import itertools
-
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
-ls = dict([int(y) for y in x.strip().split(': ')] for x in open(os.path.join(INPUT_DIR, "2017_13.txt")).readlines()]
-h = lambda d: [i*ls[i] for i in ls if (i+d) % (ls[i]*2-2) == 0]
+INPUT_DIR = os.path.expanduser(os.getenv("AOC_INPUT_DIR", "~/.cache/aocb/inputs/"))
+with open(os.path.join(INPUT_DIR, "2017_13.txt")) as f:
+    scanners = {
+        int(depth): int(rng)
+        for depth, rng in (line.strip().split(": ") for line in f if line.strip())
+    }
 
-print(sum(h(0)))
-print(next(d for d in itertools.count(0) if not h(d)))
+# Capture times when the packet gets caught given a start delay.
+def caught_positions(delay: int) -> list[int]:
+    return [
+        depth * scanners[depth]
+        for depth in scanners
+        if (depth + delay) % (scanners[depth] * 2 - 2) == 0
+    ]
+
+print(sum(caught_positions(0)))
+print(next(delay for delay in itertools.count(0) if not caught_positions(delay)))

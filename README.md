@@ -73,6 +73,36 @@ This will:
 3. Submit to Advent of Code (part 1, then part 2)
 4. Re-download problem text after part 1 submission to unlock part 2
 
+### Automated Submission of Python Solutions
+
+If you already have working Python solutions in `solutions/<year>/python/day_##.py`, you can submit multiple days in one go. First ensure your Advent of Code session token is exported:
+
+```bash
+export AOC_SESSION=your_session_token_here
+```
+
+Then run:
+
+```bash
+python -m aocb.submit --years 2016 2017
+```
+
+This command will re-run every Python solution for the requested years, cache the answers in `~/.cache/aocb/solutions.json`, and submit them using the official Advent of Code API. Useful flags:
+
+- `--days 1 2 3` to submit only selected days.
+- `--no-refresh` to reuse the cached answers without rerunning scripts.
+- `--dry-run` to print the submissions without sending them (helpful for verification).
+
+Programmatic use is also available inside Python:
+
+```python
+from aocb.submit import run_and_submit
+
+run_and_submit(years=[2016, 2017], days=range(1, 26), dry_run=True)
+```
+
+Always double-check that each script prints the correct single-line answers expected by Advent of Code before performing a live submission.
+
 ## Acknowledgements
 
 - https://github.com/narimiran/advent_of_code_2015
