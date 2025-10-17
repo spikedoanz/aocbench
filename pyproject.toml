@@ -18,12 +18,8 @@ dependencies = [
 aocbench = "aocb.cli:aocbench"
 
 [tool.setuptools]
-py-modules = []
+packages = ["aocb"]
+py-modules = ["aoc_bench"]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["aocb*"]
-exclude = ["aoc_bench"]
-
-[tool.setuptools.exclude-package-data]
-"*" = ["aoc_bench.py"]
+[tool.setuptools.package-data]
+aocb = ["data/**/*"]

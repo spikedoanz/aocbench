@@ -46,7 +46,7 @@ def load_environment(
     def tasks_to_dataset(tasks):
         data = [
             {
-                "question": task["prompt"],  # Changed from "prompt" to "question"
+                "prompt": [{"role": "user", "content": task["prompt"]}],  # Multi-turn format
                 "info": {
                     "task_identifier": task["task_identifier"],
                     "year": task["year"],
@@ -55,6 +55,31 @@ def load_environment(
             }
             for task in tasks
         ]
+        
+        # Handle empty datasets - create with proper schema
+        if not data:
+            import pyarrow as pa
+            
+            schema = pa.schema([
+                ("prompt", pa.string()),
+                ("info", pa.struct([
+                    ("task_identifier", pa.string()),
+                    ("year", pa.int64()),
+                    ("day", pa.int64())
+                ]))
+            ])
+            
+            empty_table = pa.table({
+                "prompt": pa.array([], type=pa.string()),
+                "info": pa.array([], type=pa.struct([
+                    ("task_identifier", pa.string()),
+                    ("year", pa.int64()),
+                    ("day", pa.int64())
+                ]))
+            }, schema=schema)
+            
+            return Dataset(empty_table)
+        
         return Dataset.from_list(data)
 
     dataset = tasks_to_dataset(train_tasks)

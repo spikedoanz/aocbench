@@ -1,0 +1,2 @@
+global-exclude aoc_bench.py
+recursive-include aocb *.py
