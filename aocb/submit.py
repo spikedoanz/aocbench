@@ -6,6 +6,7 @@ from itertools import product
 from typing import Any, Dict, Iterable, List, Optional
 
 from aocd import submit
+from aocd.models import Puzzle
 from aocb.defaults import SOLUTIONS_PATH, INPUTS_PATH, CACHE_PATH
 
 
@@ -147,35 +148,41 @@ def submit_all(
         part1 = sol.get("part1")
         part2 = sol.get("part2")
 
+        puzzle = Puzzle(year=year, day=day)
+
         print(f"\nYear {year} Day {day}:")
 
         # Submit part A
-        if part1:
+        if part1 and not puzzle.answered_a:
             if dry_run:
                 print(f"  Dry run: would submit part A = {part1}")
             else:
                 try:
-                    ret = submit(part1, part="a", day=day, year=year)
+                    ret = submit(part1, part="a", day=day, year=year, reopen=False)
                     print(ret)
                     print(f"  Submitted part A: {part1}")
                 except Exception as e:
                     print(f"  Error submitting part A: {e}")
 
-                time.sleep(delay)  # rate limiting
+            time.sleep(delay)  # rate limiting
+        elif part1:
+            print(f"  Part A already solved")
 
         # Submit part B
-        if part2:
+        if part2 and not puzzle.answered_b:
             if dry_run:
                 print(f"  Dry run: would submit part B = {part2}")
             else:
                 try:
-                    ret = submit(part2, part="b", day=day, year=year)
+                    ret = submit(part2, part="b", day=day, year=year, reopen=False)
                     print(ret)
                     print(f"  Submitted part B: {part2}")
                 except Exception as e:
                     print(f"  Error submitting part B: {e}")
 
-                time.sleep(delay)  # rate limiting
+            time.sleep(delay)  # rate limiting
+        elif part2:
+            print(f"  Part B already solved")
 
 
 def run_and_submit(
