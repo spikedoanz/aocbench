@@ -2,7 +2,7 @@ import numpy as np
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 in_ = np.loadtxt(os.path.join(INPUT_DIR, '2016_03.txt'))
 
 def find_triangles(arr):

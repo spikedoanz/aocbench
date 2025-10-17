@@ -29,7 +29,7 @@ def find_best_cookie(properties):
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = parse_data(open(os.path.join(INPUT_DIR, "2015_15.txt")).read().splitlines())
 pt1, pt2 = find_best_cookie(data)
 print(pt1)

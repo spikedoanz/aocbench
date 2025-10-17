@@ -73,7 +73,7 @@ def calculate_steps(gens, chips, lift, steps):
 # Parse input file to determine generator and chip positions
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = open(os.path.join(INPUT_DIR, "2016_11.txt")).read()
 # The actual input determines these positions - hardcoded for this specific input
 first_solution = calculate_steps(gens='01111', chips='02222', lift=0, steps=0)

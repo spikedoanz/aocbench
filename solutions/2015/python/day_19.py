@@ -30,7 +30,7 @@ def part_2(molecule):
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = open(os.path.join(INPUT_DIR, "2015_19.txt")).read().splitlines()
 molecule = data[-1]
 replacements = generate_replacements(data)

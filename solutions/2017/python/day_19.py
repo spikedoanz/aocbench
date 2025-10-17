@@ -2,7 +2,7 @@ import re
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = [[c if c != ' ' else 0 for c in x.strip('\n')]
         for x in open(os.path.join(INPUT_DIR, "2017_19.txt")).readlines()]
 

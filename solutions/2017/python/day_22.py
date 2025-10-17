@@ -9,7 +9,7 @@ def tick(m, cx, cy, dx, dy, dc):
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 m, w, h = {}, 0, 0
 for y, line in enumerate(open(os.path.join(INPUT_DIR, "2017_22.txt")).readlines()):
     for x, c in enumerate(line.strip()):

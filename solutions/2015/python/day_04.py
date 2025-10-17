@@ -9,7 +9,7 @@ def solve(target, start=1):
         if m.startswith(target): return i
 
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 INPUT = open(os.path.join(INPUT_DIR, "2015_04.txt")).read().strip()
 
 print(solve(5*'0'))

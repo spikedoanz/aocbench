@@ -3,7 +3,7 @@ import re
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = open(os.path.join(INPUT_DIR, "2016_23.txt")).read()
 # Extract the constants from lines like "cpy 98 c" and "jnz 86 d"
 constants = re.findall(r'cpy (\d+)', data)

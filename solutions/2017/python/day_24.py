@@ -1,6 +1,6 @@
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 d = [tuple(int(y) for y in x.strip().split('/')) for x in open(os.path.join(INPUT_DIR, "2017_24.txt")).readlines()]
 
 

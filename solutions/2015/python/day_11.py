@@ -21,7 +21,7 @@ def next_valid(pw):
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 INPUT = open(os.path.join(INPUT_DIR, "2015_11.txt")).read().strip()
 valid_passwords = next_valid(INPUT)
 

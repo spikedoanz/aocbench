@@ -1,6 +1,6 @@
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 with open(os.path.join(INPUT_DIR, "2016_12.txt"), 'r') as infile:
     instructions = infile.read().splitlines()
 

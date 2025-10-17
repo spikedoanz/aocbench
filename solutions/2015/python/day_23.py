@@ -45,7 +45,7 @@ def run_program_fast(a=0):
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = open(os.path.join(INPUT_DIR, "2015_23.txt")).read().splitlines()
 instructions = compile_program(data)
 print(run_program_fast(0))

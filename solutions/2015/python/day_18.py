@@ -29,7 +29,7 @@ def play(data, steps, part=1):
 import os
 
 SIZE = 100
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = load_data(os.path.join(INPUT_DIR, "2015_18.txt"))
 
 print(play(data, 100))

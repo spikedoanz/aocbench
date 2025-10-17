@@ -5,7 +5,7 @@ rings = [(0, 0, 0), (0, 0, 0), (25, 1, 0), (50, 2, 0),
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = open(os.path.join(INPUT_DIR, "2015_21.txt")).read().splitlines()
 opponent = (int(data[0].split(": ")[1]), int(data[1].split(": ")[1]), int(data[2].split(": ")[1]))
 

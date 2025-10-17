@@ -23,7 +23,7 @@ def iterate(g):
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 m = {}
 for line in open(os.path.join(INPUT_DIR, "2017_21.txt")).readlines():
     k, r = [parse(x) for x in line.strip().split(' => ')]

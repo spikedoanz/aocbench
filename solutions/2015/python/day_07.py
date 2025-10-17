@@ -19,7 +19,7 @@ def get_value(wires, wire='a', b=None):
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = open(os.path.join(INPUT_DIR, "2015_07.txt")).read().splitlines()
 wires = parse_input(data)
 

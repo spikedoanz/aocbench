@@ -21,7 +21,7 @@ solve = lambda func: (
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = map(parse_line, open(os.path.join(INPUT_DIR, "2015_09.txt")).read().splitlines())
 locations, relations = create_relations(data)
 

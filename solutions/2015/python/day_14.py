@@ -21,7 +21,7 @@ def part_2(data):
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = list(map(parse_line, open(os.path.join(INPUT_DIR, "2015_14.txt")).read().splitlines()))
 
 print(max(calc_dist(*reindeer) for reindeer in data))

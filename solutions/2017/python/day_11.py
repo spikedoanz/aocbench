@@ -1,6 +1,6 @@
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = open(os.path.join(INPUT_DIR, "2017_11.txt")).readline().strip().split(',')
 
 d = lambda x, y: max(abs(x), (abs(x)+1)//2+abs(y))

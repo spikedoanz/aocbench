@@ -13,7 +13,7 @@ spells = {
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 data = open(os.path.join(INPUT_DIR, "2015_22.txt")).read().splitlines()
 BOSS_HP = int(data[0].split(": ")[1])
 BOSS_DMG = int(data[1].split(": ")[1])

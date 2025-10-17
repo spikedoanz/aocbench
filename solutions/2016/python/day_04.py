@@ -1,6 +1,6 @@
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 all_rooms = open(os.path.join(INPUT_DIR, "2016_04.txt")).read().splitlines()
 
 rooms = ((room[:-11].replace('-', ''),

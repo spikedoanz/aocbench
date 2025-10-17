@@ -3,7 +3,7 @@ import numpy as np
 
 import os
 
-INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', 'inputs'))
+INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
 lines = open(os.path.join(INPUT_DIR, "2016_22.txt")).read().split('\n')
 
 avail = []
