@@ -31,6 +31,7 @@ training_args.num_generations = 16
 training_args.gradient_accumulation_steps = 16
 training_args.num_iterations = 1
 training_args.num_train_epochs = 5
+training_args.max_prompt_length = 4096 * 2
 training_args.max_seq_len = 4096 * 4
 training_args.max_steps = 500
 training_args.save_steps = 100
