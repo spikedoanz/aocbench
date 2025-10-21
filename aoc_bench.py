@@ -188,7 +188,9 @@ def load_environment(
     all_tasks = load_tasks(years=years, days=days)
 
     train_tasks = [t for t in all_tasks if t["day"] not in eval_days]
+    print(len(train_tasks))
     eval_tasks = [t for t in all_tasks if t["day"] in eval_days]
+    print(len(eval_tasks))
 
     def tasks_to_dataset(tasks):
         data = [

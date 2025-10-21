@@ -16,7 +16,10 @@ CUDA_VISIBLE_DEVICES=6,7 accelerate launch --num-processes 2 \
     --config-file aocbench/training/config/zero3.yaml aocbench/training/train_aoc_bench.py
 """
 
-vf_env = vf.load_environment(env_id="aoc_bench")
+vf_env = vf.load_environment(
+    env_id="aoc_bench",
+    eval_days = [5,10,15,20,25]
+)
 
 model_name = "willcb/Qwen3-8B"
 model, tokenizer = vf.get_model_and_tokenizer(model_name)
