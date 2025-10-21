@@ -6,6 +6,7 @@ import verifiers as vf
 from datasets import Dataset
 from verifiers.types import Messages, State
 
+from aocb.rubric import BatchMultiprocessedRubric
 from aocb.task import (
     SYSTEM_PROMPT,
     compile_reward,
@@ -21,6 +22,12 @@ DEFAULT_COMPILER_OUTPUT_CROP = 10000
 
 
 VERBOSE = os.getenv("CI", "") != ""
+
+class MultiProcessRubric(vf.Rubric):
+    """vf.Rubric that uses multiprocessing to score rollouts in parallel"""
+    def __init__(self, max_workers = 4, *args, **kwargs):
+
+
 
 class AOCBMultiTurnEnv(vf.MultiTurnEnv):
     """Multi-turn environment for AOC Bench with compiler/test feedback."""
@@ -287,7 +294,7 @@ def load_environment(
         
         return correctness_reward(year, day, run_result)
 
-    rubric = vf.Rubric(
+    rubric = BatchMultiprocessedRubric(
         funcs=[compile_reward_func, correctness_reward_func],
         weights=weights,
     )
