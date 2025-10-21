@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import subprocess
 import uuid
 from subprocess import CompletedProcess
@@ -220,6 +221,7 @@ def run_task(
     
     if int(os.environ.get("VERBOSE", 0)) > 0: 
         print(f"Running task at {project_path}")
+        time_start = time.time()
     if not project_path.exists():
         raise FileNotFoundError(f"Project not found: {project_path}")
     
@@ -253,7 +255,7 @@ def run_task(
         )
     
     if int(os.environ.get("VERBOSE", 0)) > 0: 
-        print(f"Ran task at {project_path}")
+        print(f"Ran task at {project_path} in {time.time() - time_start}")
     return compile_result, run_result
 
 
@@ -279,7 +281,7 @@ def load_tasks(
 
 def extract_lean4_block(text: str) -> str|None:
     """Extract content from ```lean4 ``` code block."""
-    pattern = r'```lean4\s*\n(.*?)\n```'
+    pattern = r'```lean4?\s*\n(.*?)\n```'
     match = re.search(pattern, text, re.DOTALL)
     return match.group(1) if match else None
 

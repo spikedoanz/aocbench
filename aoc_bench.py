@@ -1,4 +1,5 @@
 import hashlib
+import os
 from typing import List, Tuple, Any
 
 import verifiers as vf
@@ -18,6 +19,8 @@ from aocb.task import (
 
 DEFAULT_COMPILER_OUTPUT_CROP = 10000
 
+
+VERBOSE = os.getenv("CI", "") != ""
 
 class AOCBMultiTurnEnv(vf.MultiTurnEnv):
     """Multi-turn environment for AOC Bench with compiler/test feedback."""
@@ -61,22 +64,13 @@ class AOCBMultiTurnEnv(vf.MultiTurnEnv):
         return self.cache[key]
     
     async def is_completed(self, messages: Messages, state: State, **kwargs) -> bool:
-        """
-        Check if the task is completed.
-        
-        Returns True if:
-        - Maximum turns reached (handled by super())
-        - Solution succeeded (all tests passed)
-        """
-        if await super().is_completed(messages, state, **kwargs):
-            return True
-        
+        if await super().is_completed(messages, state, **kwargs): return True
         return state.get("succeeded", False)
     
     async def env_response(self, messages: Messages, state: State, **kwargs) -> Tuple[Messages, State]:
         """
         Generate environment response based on model's code attempt.
-        
+
         Compiles and runs the code, providing feedback on success or failure.
         """
         last_message = messages[-1] if messages else None
