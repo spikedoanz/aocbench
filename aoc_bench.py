@@ -163,13 +163,13 @@ class AOCBMultiTurnEnv(vf.MultiTurnEnv):
 
 
 def load_environment(
-    years: List[int] = [2015],
+    max_turns: int = 4,
+    years: List[int] = [2015, 2016,2017],
     days: List[int] = list(range(1, 26)),
     eval_days: List[int] = list(range(1,25)),
     use_think: bool = False,
     system_prompt: str = SYSTEM_PROMPT,
     weights: List[float] = [0.3, 0.7],
-    max_turns: int = 4,
     compiler_output_crop: int = DEFAULT_COMPILER_OUTPUT_CROP,
 ):
     """
@@ -193,7 +193,7 @@ def load_environment(
     def tasks_to_dataset(tasks):
         data = [
             {
-                "prompt": [{"role": "user", "content": task["prompt"]}],
+                "prompt": task["prompt"],  # Keep as string, not message list
                 "info": {
                     "task_identifier": task["task_identifier"],
                     "year": task["year"],
