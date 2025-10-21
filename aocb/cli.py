@@ -21,7 +21,9 @@ from aocb.task import (
     DEFAULT_PROJECT_NAME,
 )
 from aocb.defaults import AVAILABLE_YEARS, DEFAULT_LAKE_TIMEOUT
-from aocb.download import download_inputs, download_problems
+from aocb.download import download_inputs, download_problems, generate_prompts
+from aocb.submit import load_answers
+from aocb.submit import save_answers
 
 
 @click.group()
@@ -299,6 +301,78 @@ def submit(path: str):
 
     click.echo("\nDone!")
 
+@aocbench.command()
+@click.option('--years', type=int, multiple=True, help='Specific years to initialize (default: all available)')
+def init(years: tuple):
+    """Initialize AOC Bench by downloading inputs, problems, generating prompts, and caching solutions."""
+
+    from aocb.defaults import AVAILABLE_YEARS
+
+    # Determine which years to process
+    if years:
+        years_to_process = list(years)
+        # Validate years
+        invalid_years = [y for y in years_to_process if y not in AVAILABLE_YEARS]
+        if invalid_years:
+            click.echo(f"Error: Invalid years: {invalid_years}. Available: {AVAILABLE_YEARS}")
+            return
+    else:
+        years_to_process = AVAILABLE_YEARS
+
+    click.echo("Initializing AOC Bench...")
+    click.echo(f"Processing years: {years_to_process}")
+
+    # Check existing solutions
+    existing_solutions = load_answers()
+    solved_days = {(sol["year"], sol["day"]) for sol in existing_solutions}
+    click.echo(f"Found {len(solved_days)} already solved days")
+
+    # Determine which days need solution caching
+    all_days = {(year, day) for year in years_to_process for day in range(1, 26)}
+    days_needing_solutions = all_days - solved_days
+
+    click.echo(f"Days needing solution caching: {len(days_needing_solutions)}")
+
+    # Always proceed with downloads and generation, even if solutions exist
+    # This ensures text files and prompts are generated for all available problems
+
+    # Download inputs and problems
+    click.echo("\nDownloading inputs and problems...")
+    try:
+        download_inputs()
+        download_problems()
+    except AssertionError as e:
+        click.echo(f"Error: {e}")
+        return
+    except Exception as e:
+        click.echo(f"Error downloading data: {e}")
+        return
+
+    # Generate prompt files
+    click.echo("\nGenerating prompt files...")
+    try:
+        generate_prompts()
+    except Exception as e:
+        click.echo(f"Error generating prompts: {e}")
+        return
+
+    # Cache solutions for unsolved days
+    if days_needing_solutions:
+        click.echo("\nCaching solutions...")
+        try:
+            # Only cache solutions for years that have unsolved days
+            years_needing_solutions = {year for year, day in days_needing_solutions}
+            save_answers(list(years_needing_solutions), list(range(1, 26)))
+        except Exception as e:
+            click.echo(f"Error caching solutions: {e}")
+            return
+    else:
+        click.echo("\nSkipping solution caching (all solutions already cached)")
+
+    click.echo("\nInitialization complete!")
+
 
 if __name__ == '__main__':
     aocbench()
+
+

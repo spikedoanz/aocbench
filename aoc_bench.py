@@ -1,8 +1,9 @@
 import hashlib
-from typing import List
+from typing import List, Tuple, Any
 
 import verifiers as vf
 from datasets import Dataset
+from verifiers.types import Messages, State
 
 from aocb.task import (
     SYSTEM_PROMPT,
@@ -15,6 +16,151 @@ from aocb.task import (
     run_task,
 )
 
+DEFAULT_COMPILER_OUTPUT_CROP = 10000
+
+
+class AOCBMultiTurnEnv(vf.MultiTurnEnv):
+    """Multi-turn environment for AOC Bench with compiler/test feedback."""
+    
+    def __init__(
+        self,
+        compiler_output_crop: int = DEFAULT_COMPILER_OUTPUT_CROP,
+        **kwargs
+    ):
+        """
+        Initialize the multi-turn AOC Bench environment.
+        
+        Args:
+            compiler_output_crop: Max characters per compiler output field
+            **kwargs: Additional arguments for MultiTurnEnv
+        """
+        super().__init__(**kwargs)
+        self.compiler_output_crop = compiler_output_crop
+        self.cache = {}
+    
+    def get_results(self, completion, year, day, parser):
+        """Cache task creation and execution results."""
+        if isinstance(completion, list):
+            completion_str = ""
+            for msg in completion:
+                if msg.get("role") == "assistant":
+                    completion_str += msg.get("content", "")
+        else:
+            completion_str = completion
+
+        key = (year, day, hashlib.md5(completion_str.encode()).hexdigest())
+        if key not in self.cache:
+            extracted = parser.parse_answer(completion)
+            if extracted is None:
+                self.cache[key] = (None, None)
+            else:
+                spec = create_spec(year, day)
+                task_id = create_task(spec, submission=extracted)
+                compile_result, run_result = run_task(task_id)
+                self.cache[key] = (compile_result, run_result)
+        return self.cache[key]
+    
+    async def is_completed(self, messages: Messages, state: State, **kwargs) -> bool:
+        """
+        Check if the task is completed.
+        
+        Returns True if:
+        - Maximum turns reached (handled by super())
+        - Solution succeeded (all tests passed)
+        """
+        if await super().is_completed(messages, state, **kwargs):
+            return True
+        
+        return state.get("succeeded", False)
+    
+    async def env_response(self, messages: Messages, state: State, **kwargs) -> Tuple[Messages, State]:
+        """
+        Generate environment response based on model's code attempt.
+        
+        Compiles and runs the code, providing feedback on success or failure.
+        """
+        last_message = messages[-1] if messages else None
+        state["attempt"] = state.get("attempt", 0) + 1
+        
+        if last_message and last_message.get("role") == "assistant":
+            completion = [last_message]
+            parsed_code = self.parser.parse_answer(completion)
+            
+            if parsed_code is None:
+                response = [{
+                    "role": "user",
+                    "content": "No valid Lean4 code found in your response. Please provide code within ```lean4 ``` code blocks."
+                }]
+            else:
+                info = state.get("info", {})
+                year = info.get("year")
+                day = info.get("day")
+                
+                compile_result, run_result = self.get_results(completion, year, day, self.parser)
+                
+                if compile_result is None:
+                    response = [{
+                        "role": "user",
+                        "content": "Failed to parse or create task from your code."
+                    }]
+                elif compile_result.returncode != 0:
+                    feedback_parts = ["Compilation failed."]
+                    
+                    if compile_result.stdout:
+                        stdout_cropped = compile_result.stdout[:self.compiler_output_crop]
+                        feedback_parts.append(f"\nStdout:\n{stdout_cropped}")
+                        if len(compile_result.stdout) > self.compiler_output_crop:
+                            feedback_parts.append("... (stdout truncated)")
+                    
+                    if compile_result.stderr:
+                        stderr_cropped = compile_result.stderr[:self.compiler_output_crop]
+                        feedback_parts.append(f"\nStderr:\n{stderr_cropped}")
+                        if len(compile_result.stderr) > self.compiler_output_crop:
+                            feedback_parts.append("... (stderr truncated)")
+                    
+                    response = [{
+                        "role": "user",
+                        "content": "\n".join(feedback_parts)
+                    }]
+                else:
+                    correctness = correctness_reward(year, day, run_result)
+                    
+                    if correctness == 1.0:
+                        state["succeeded"] = True
+                        response = [{
+                            "role": "user",
+                            "content": "All tests passed! Your solution is correct."
+                        }]
+                    else:
+                        feedback_parts = ["Compilation succeeded, but tests did not fully pass."]
+                        
+                        if run_result and run_result.stdout:
+                            stdout_cropped = run_result.stdout[:self.compiler_output_crop]
+                            feedback_parts.append(f"\nYour program output:\n{stdout_cropped}")
+                            if len(run_result.stdout) > self.compiler_output_crop:
+                                feedback_parts.append("... (output truncated)")
+                        
+                        if run_result and run_result.stderr:
+                            stderr_cropped = run_result.stderr[:self.compiler_output_crop]
+                            feedback_parts.append(f"\nStderr:\n{stderr_cropped}")
+                            if len(run_result.stderr) > self.compiler_output_crop:
+                                feedback_parts.append("... (stderr truncated)")
+                        
+                        feedback_parts.append(f"\nCorrectness score: {correctness:.2f}/1.00")
+                        feedback_parts.append("Please fix your solution and try again.")
+                        
+                        response = [{
+                            "role": "user",
+                            "content": "\n".join(feedback_parts)
+                        }]
+        else:
+            response = [{
+                "role": "user",
+                "content": "Please provide your Lean4 solution."
+            }]
+        
+        return response, state
+
 
 def load_environment(
     years: List[int] = [2015],
@@ -23,6 +169,8 @@ def load_environment(
     use_think: bool = False,
     system_prompt: str = SYSTEM_PROMPT,
     weights: List[float] = [0.3, 0.7],
+    max_turns: int = 4,
+    compiler_output_crop: int = DEFAULT_COMPILER_OUTPUT_CROP,
 ):
     """
     Load Advent of Code environment for verifiers.
@@ -34,19 +182,18 @@ def load_environment(
         use_think: Whether to use ThinkParser or regular Parser
         system_prompt: System prompt for the environment
         weights: [compile_weight, correctness_weight] for reward weighting
+        max_turns: Maximum number of turns for multi-turn interaction
+        compiler_output_crop: Max characters per compiler output field
     """
-    # Load all tasks
     all_tasks = load_tasks(years=years, days=days)
 
-    # Split into train and eval based on eval_days
     train_tasks = [t for t in all_tasks if t["day"] not in eval_days]
     eval_tasks = [t for t in all_tasks if t["day"] in eval_days]
 
-    # Convert to Dataset format expected by verifiers
     def tasks_to_dataset(tasks):
         data = [
             {
-                "prompt": [{"role": "user", "content": task["prompt"]}],  # Multi-turn format
+                "prompt": [{"role": "user", "content": task["prompt"]}],
                 "info": {
                     "task_identifier": task["task_identifier"],
                     "year": task["year"],
@@ -56,7 +203,6 @@ def load_environment(
             for task in tasks
         ]
         
-        # Handle empty datasets - create with proper schema
         if not data:
             import pyarrow as pa
             
@@ -85,8 +231,6 @@ def load_environment(
     dataset = tasks_to_dataset(train_tasks)
     eval_dataset = tasks_to_dataset(eval_tasks)
 
-    # Create parser with lean4 extraction
-    # Wrapper to convert str|None to str for type compatibility
     def extract_fn(text: str) -> str:
         result = extract_lean4_block(text)
         return result if result is not None else ""
@@ -96,63 +240,72 @@ def load_environment(
     else:
         parser = vf.Parser(extract_fn=extract_fn)
 
-    # Create reward functions with caching to avoid duplicate task runs
-    cache = {}
-
-    def get_results(completion, year, day, parser):
-        """Cache task creation and execution results."""
-        # Convert completion to string for hashing (handles both str and list[dict])
+    def compile_reward_func(parser, completion, info, state=None, **kwargs):
+        year = info["year"]
+        day = info["day"]
+        
+        if state and state.get("succeeded", False):
+            return 1.0
+        
         if isinstance(completion, list):
-            # For chat format, get the last assistant message
             completion_str = ""
             for msg in completion:
                 if msg.get("role") == "assistant":
                     completion_str += msg.get("content", "")
         else:
             completion_str = completion
-
-        key = (year, day, hashlib.md5(completion_str.encode()).hexdigest())
-        if key not in cache:
-            extracted = parser.parse_answer(completion)
-            if extracted is None:
-                cache[key] = (None, None)
-            else:
-                spec = create_spec(year, day)
-                task_id = create_task(spec, submission=extracted)
-                compile_result, run_result = run_task(task_id)
-                cache[key] = (compile_result, run_result)
-        return cache[key]
-
-    def compile_reward_func(parser, completion, info, **kwargs):
-        year = info["year"]
-        day = info["day"]
-        compile_result, _ = get_results(completion, year, day, parser)
-        if compile_result is None:
+        
+        extracted = parser.parse_answer(completion)
+        if extracted is None:
             return 0.0
+        
+        spec = create_spec(year, day)
+        task_id = create_task(spec, submission=extracted)
+        compile_result, _ = run_task(task_id)
+        
         return compile_reward(compile_result)
 
-    def correctness_reward_func(parser, completion, info, **kwargs):
+    def correctness_reward_func(parser, completion, info, state=None, **kwargs):
         year = info["year"]
         day = info["day"]
-        _, run_result = get_results(completion, year, day, parser)
-        if run_result is None:
+        
+        if state and state.get("succeeded", False):
+            return 1.0
+        
+        if isinstance(completion, list):
+            completion_str = ""
+            for msg in completion:
+                if msg.get("role") == "assistant":
+                    completion_str += msg.get("content", "")
+        else:
+            completion_str = completion
+        
+        extracted = parser.parse_answer(completion)
+        if extracted is None:
             return 0.0
+        
+        spec = create_spec(year, day)
+        task_id = create_task(spec, submission=extracted)
+        compile_result, run_result = run_task(task_id)
+        
+        if compile_result.returncode != 0:
+            return 0.0
+        
         return correctness_reward(year, day, run_result)
 
-    # Create rubric with compile and correctness rewards
     rubric = vf.Rubric(
-        parser=parser,
         funcs=[compile_reward_func, correctness_reward_func],
         weights=weights,
     )
 
-    # Create environment
-    vf_env = vf.SingleTurnEnv(
+    vf_env = AOCBMultiTurnEnv(
         dataset=dataset,
         eval_dataset=eval_dataset,
         system_prompt=system_prompt,
         parser=parser,
         rubric=rubric,
+        max_turns=max_turns,
+        compiler_output_crop=compiler_output_crop,
     )
 
     return vf_env
