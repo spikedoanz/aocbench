@@ -18,6 +18,7 @@ CUDA_VISIBLE_DEVICES=6,7 accelerate launch --num-processes 2 \
 
 vf_env = vf.load_environment(
     env_id="aoc_bench",
+    max_turns = 2,
     eval_days = [5,10,15,20,25]
 )
 
@@ -27,11 +28,12 @@ run_name = "aoc_bench-grpo_" + model_name.split("/")[-1].lower()
 
 training_args = vf.grpo_defaults(run_name=run_name)
 training_args.per_device_train_batch_size = 8
-training_args.num_generations = 16
+training_args.num_generations = 8
 training_args.gradient_accumulation_steps = 16
 training_args.num_iterations = 1
 training_args.num_train_epochs = 5
 training_args.max_prompt_length = 4096 * 2
+training_args.async_generation_timeout = 600 * 2 
 training_args.max_seq_len = 4096 * 4
 training_args.max_steps = 500
 training_args.save_steps = 100
