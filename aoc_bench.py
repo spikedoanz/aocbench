@@ -1,6 +1,8 @@
+import asyncio
 import hashlib
 import os
-from typing import List, Tuple, Any
+from typing import List, Tuple, Any, Optional
+import subprocess
 
 import verifiers as vf
 from datasets import Dataset
@@ -17,17 +19,12 @@ from aocb.task import (
     load_tasks,
     run_task,
 )
+from aocb.defaults import CACHE_PATH, DEFAULT_PROJECT_NAME, DEFAULT_LAKE_TIMEOUT
 
 DEFAULT_COMPILER_OUTPUT_CROP = 10000
-
+DEFAULT_MAX_CONCURRENT_COMPILATIONS = 8  # Default max concurrent compilations
 
 VERBOSE = os.getenv("CI", "") != ""
-
-class MultiProcessRubric(vf.Rubric):
-    """vf.Rubric that uses multiprocessing to score rollouts in parallel"""
-    def __init__(self, max_workers = 4, *args, **kwargs):
-
-
 
 class AOCBMultiTurnEnv(vf.MultiTurnEnv):
     """Multi-turn environment for AOC Bench with compiler/test feedback."""
@@ -35,6 +32,7 @@ class AOCBMultiTurnEnv(vf.MultiTurnEnv):
     def __init__(
         self,
         compiler_output_crop: int = DEFAULT_COMPILER_OUTPUT_CROP,
+        max_concurrent_compilations: int = DEFAULT_MAX_CONCURRENT_COMPILATIONS,
         **kwargs
     ):
         """
@@ -42,14 +40,65 @@ class AOCBMultiTurnEnv(vf.MultiTurnEnv):
         
         Args:
             compiler_output_crop: Max characters per compiler output field
+            max_concurrent_compilations: Max number of concurrent compilations
             **kwargs: Additional arguments for MultiTurnEnv
         """
         super().__init__(**kwargs)
         self.compiler_output_crop = compiler_output_crop
         self.cache = {}
+        self.max_concurrent_compilations = max_concurrent_compilations
+        self._compilation_semaphore = None  # Will be initialized when needed
     
-    def get_results(self, completion, year, day, parser):
-        """Cache task creation and execution results."""
+    async def _async_run_subprocess(self, cmd: List[str], cwd, timeout: int = DEFAULT_LAKE_TIMEOUT) -> subprocess.CompletedProcess:
+        """Run a subprocess asynchronously."""
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            cwd=cwd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+            return subprocess.CompletedProcess(
+                args=cmd,
+                returncode=proc.returncode if proc.returncode else -1,
+                stdout=stdout.decode('utf-8') if stdout else '',
+                stderr=stderr.decode('utf-8') if stderr else ''
+            )
+        except asyncio.TimeoutError:
+            proc.kill()
+            await proc.communicate()
+            raise subprocess.TimeoutExpired(cmd, timeout)
+    
+    async def _async_run_task(self, task_identifier: str) -> Tuple[subprocess.CompletedProcess, Optional[subprocess.CompletedProcess]]:
+        """Async version of run_task that uses asyncio for subprocess calls."""
+        project_root_dir = CACHE_PATH / "submissions"
+        project_name = DEFAULT_PROJECT_NAME
+        project_path = project_root_dir / task_identifier / project_name
+        
+        if not project_path.exists():
+            raise FileNotFoundError(f"Project not found: {project_path}")
+        
+        # Run lake update asynchronously
+        await self._async_run_subprocess(["lake", "update"], project_path, DEFAULT_LAKE_TIMEOUT)
+        
+        # Compile the project asynchronously
+        compile_result = await self._async_run_subprocess(["lake", "build"], project_path, DEFAULT_LAKE_TIMEOUT)
+        
+        # Only run if compilation succeeded
+        run_result = None
+        if compile_result.returncode == 0:
+            run_result = await self._async_run_subprocess(
+                ["lake", "exec", project_name.lower()], 
+                project_path, 
+                DEFAULT_LAKE_TIMEOUT
+            )
+        
+        return compile_result, run_result
+    
+    async def get_results_async(self, completion, year, day, parser):
+        """Async version of get_results with caching."""
         if isinstance(completion, list):
             completion_str = ""
             for msg in completion:
@@ -66,9 +115,27 @@ class AOCBMultiTurnEnv(vf.MultiTurnEnv):
             else:
                 spec = create_spec(year, day)
                 task_id = create_task(spec, submission=extracted)
-                compile_result, run_result = run_task(task_id)
+                
+                # Initialize semaphore if needed
+                if self._compilation_semaphore is None:
+                    self._compilation_semaphore = asyncio.Semaphore(self.max_concurrent_compilations)
+                
+                # Use semaphore to limit concurrent compilations
+                async with self._compilation_semaphore:
+                    compile_result, run_result = await self._async_run_task(task_id)
+                
                 self.cache[key] = (compile_result, run_result)
         return self.cache[key]
+    
+    def get_results(self, completion, year, day, parser):
+        """Synchronous wrapper for backward compatibility."""
+        # Run async version in new event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(self.get_results_async(completion, year, day, parser))
+        finally:
+            loop.close()
     
     async def is_completed(self, messages: Messages, state: State, **kwargs) -> bool:
         if await super().is_completed(messages, state, **kwargs): return True
@@ -79,6 +146,7 @@ class AOCBMultiTurnEnv(vf.MultiTurnEnv):
         Generate environment response based on model's code attempt.
 
         Compiles and runs the code, providing feedback on success or failure.
+        Uses async compilation for better performance with multiple rollouts.
         """
         last_message = messages[-1] if messages else None
         state["attempt"] = state.get("attempt", 0) + 1
@@ -97,7 +165,8 @@ class AOCBMultiTurnEnv(vf.MultiTurnEnv):
                 year = info.get("year")
                 day = info.get("day")
                 
-                compile_result, run_result = self.get_results(completion, year, day, self.parser)
+                # Use async version for better parallelization
+                compile_result, run_result = await self.get_results_async(completion, year, day, self.parser)
                 
                 if compile_result is None:
                     response = [{
@@ -172,6 +241,7 @@ def load_environment(
     system_prompt: str = SYSTEM_PROMPT,
     weights: List[float] = [0.3, 0.7],
     compiler_output_crop: int = DEFAULT_COMPILER_OUTPUT_CROP,
+    max_concurrent_compilations: int = DEFAULT_MAX_CONCURRENT_COMPILATIONS,
 ):
     """
     Load Advent of Code environment for verifiers.
@@ -185,6 +255,7 @@ def load_environment(
         weights: [compile_weight, correctness_weight] for reward weighting
         max_turns: Maximum number of turns for multi-turn interaction
         compiler_output_crop: Max characters per compiler output field
+        max_concurrent_compilations: Maximum number of concurrent compilations
     """
     all_tasks = load_tasks(years=years, days=days)
 
@@ -307,6 +378,7 @@ def load_environment(
         rubric=rubric,
         max_turns=max_turns,
         compiler_output_crop=compiler_output_crop,
+        max_concurrent_compilations=max_concurrent_compilations,
     )
 
     return vf_env
