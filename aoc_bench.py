@@ -23,12 +23,6 @@ DEFAULT_COMPILER_OUTPUT_CROP = 10000
 
 VERBOSE = os.getenv("CI", "") != ""
 
-class MultiProcessRubric(vf.Rubric):
-    """vf.Rubric that uses multiprocessing to score rollouts in parallel"""
-    def __init__(self, max_workers = 4, *args, **kwargs):
-
-
-
 class AOCBMultiTurnEnv(vf.MultiTurnEnv):
     """Multi-turn environment for AOC Bench with compiler/test feedback."""
     
