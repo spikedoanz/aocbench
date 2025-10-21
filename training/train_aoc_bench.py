@@ -13,7 +13,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5 vf-vllm --model willcb/Qwen3-8B \
 
 training:
 CUDA_VISIBLE_DEVICES=6,7 accelerate launch --num-processes 2 \
-    --config-file training/config/zero3.yaml examples/grpo/train_wiki_search.py
+    --config-file aocbench/training/config/zero3.yaml aocbench/training/train_aoc_bench.py
 """
 
 vf_env = vf.load_environment(env_id="aoc_bench")
