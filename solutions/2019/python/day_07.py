@@ -1,110 +1,94 @@
 import os
 
 INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
-lines = open(os.path.join(INPUT_DIR, "2019_07.txt")).readlines()
+
+from math import inf
+from itertools import count, permutations
+
+
+with open(os.path.join(INPUT_DIR, '2019_07.txt')) as f:
+    ns = list(map(int, f.read().split(',')))
+
+
+def run():
+    p = list(ns)
+    i = 0
+    while True:
+        cmd = str(p[i]).zfill(5)
+        opcode = int(cmd[3:])
+        try:
+            p1 = p[i + 1] if int(cmd[2]) else p[p[i + 1]]
+        except IndexError:
+            pass
+        try:
+            p2 = p[i + 2] if int(cmd[1]) else p[p[i + 2]]
+        except IndexError:
+            pass
+        if opcode == 1:
+            p[p[i + 3]] = p1 + p2
+            i += 4
+        elif opcode == 2:
+            p[p[i + 3]] = p1 * p2
+            i += 4
+        elif opcode == 3:
+            p[p[i + 1]] = yield
+            i += 2
+        elif opcode == 4:
+            yield p1
+            i += 2
+        elif opcode == 5:
+            i = p2 if p1 != 0 else i + 3
+        elif opcode == 6:
+            i = p2 if p1 == 0 else i + 3
+        elif opcode == 7:
+            p[p[i + 3]] = int(p1 < p2)
+            i += 4
+        elif opcode == 8:
+            p[p[i + 3]] = int(p1 == p2)
+            i += 4
+        elif opcode == 99:
+            return
+
+
 
 def part1():
-    import itertools
-    def runComputer(data, phase, input):
-      program = data.copy()
-      output = None
-      i = 0
-      hasUsedPhase = False
-      while True:
-        opcode = program[i] % 100
-        if opcode == 99:
-          break
-        mode1 = (program[i] - opcode) // 100 % 10
-        mode2 = (program[i] - opcode) // 1000 % 10
-        param1 = program[i+1] if mode1 == 1 or opcode == 3 else program[program[i+1]]
-        param2 = (program[i+2] if mode2 == 1 else program[program[i+2]]) if opcode in [1, 2, 5, 6, 7, 8] else None
-        param3 = program[i+3] if opcode in [1, 2, 7, 8] else None
-        if opcode == 1: # add
-          program[param3] = param1 + param2
-          i += 4
-        elif opcode == 2: # mul
-          program[param3] = param1 * param2
-          i += 4
-        elif opcode == 3: # mov
-          program[param1] = input if hasUsedPhase else phase
-          hasUsedPhase = True
-          i += 2
-        elif opcode == 4: # out
-          output = param1
-          i += 2
-        elif opcode == 5: # jump-if-true
-          i = param2 if param1 != 0 else i+3
-        elif opcode == 6: # jump-if-false
-          i = param2 if param1 == 0 else i+3
-        elif opcode == 7: # less-than
-          program[param3] = 1 if param1 < param2 else 0
-          i += 4
-        elif opcode == 8: # equals
-          program[param3] = 1 if param1 == param2 else 0
-          i += 4
-        else:
-          raise ValueError(f'opcode {opcode} from {program[i]}')
-      if output is None:
-        raise ValueError(f'input {input} resulted in no output')
-      return output
-    def solve(input):
-      results = {}
-      for seq in itertools.permutations(range(5), 5):
-        amplification = 0
-        for phase in seq:
-          amplification = runComputer(data, phase, amplification)
-        results[seq] = amplification
-      return max(results.values())
-    return solve(data
+    m = -inf
+    for perm in permutations(range(5)):
+        signal = 0
+        for i in range(5):
+            gen = run()
+            next(gen)
+            gen.send(perm[i])
+            signal = gen.send(signal)
+        m = max(m, signal)
+
+    return m
+
 
 def part2():
-    def solve(input):
-      results = collections.OrderedDict()
-    
-      for seq in itertools.permutations(range(5, 10), 5):
-        computers = list()
-    
-        for phase in seq:
-          computer = Computer(data, phase)
-          computers.append(computer)
-    
-        computers[4].lastOutput = 0 # simulate that E gives A 0 the first time
-        running = True
-    
-        while running:
-          running = False
-          for n in range(0, 5):
-            if computers[n].halted: continue
-            x = n - 1 if n > 0 else 4
-            input = computers[x].lastOutput
-            computers[n].run(input)
-            running = True
-          if not computers[4].halted:
-            results[seq] = computers[4].lastOutput
-    
-      return max(results.values())
-    
+    m = -inf
+    for perm in permutations(range(5, 10)):
+        gens = []
 
-    import itertools
-    import collections
-    class Computer:
-      def __init__(self, program, phase):
-        self.i = 0
-        self.lastOutput = None
-        self.halted = False
-        self.phase = phase
-        self.hasUsedPhase = False
-        self.program = program.copy()
-      def run(self, input):
-        if self.halted:
-          raise RuntimeError("Computer was halted already")
-        i, output, hasUsedPhase = runComputer(self.program, self.i, input, self.phase, self.hasUsedPhase)
-        self.i = i
-        self.halted = self.halted or output is None
-        self.lastOutput = output
-        self.hasUsedPhase = hasUsedPhase
-        return output
-    return solve(data
+        # Send the given inputs only once
+        for phase in perm:
+            gen = run()
+            next(gen)
+            gens.append(gen)
+            gen.send(phase)
+
+        # From then on, only use outputs of amplifiers as inputs
+        signal = 0
+        try:
+            while True:
+                for gen in gens:
+                    signal = gen.send(signal)
+                for gen in gens:
+                    next(gen)
+        except StopIteration:
+            m = max(m, signal)
+
+    return m
 
 print(part1())
 print(part2())

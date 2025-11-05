@@ -1,85 +1,105 @@
 import os
 
 INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
-lines = open(os.path.join(INPUT_DIR, "2019_22.txt")).readlines()
+
+import re
+
+with open(os.path.join(INPUT_DIR, '2019_22.txt')) as f:
+    ls = [l.strip() for l in f.readlines()]
+    ws = [l.split() for l in ls]
+    ns = [list(map(int, re.findall(r'-?\d+', x))) for x in ls]
+
+
 
 def part1():
-    def num(line):
-      return int(''.join(filter(lambda x: x.isdigit() or x == "-", line)))
-    def rev(position, size):
-      return size - position - 1
-    def inc(position, size, n):
-      return (n * position) % size
-    def cut(position, size, n):
-      return position - n if position >= n else size - (n - position)
-    def solve(data, size):
-      program = [
-        (1, None) if "stack" in line else
-        (2, num(line)) if "inc" in line else
-        (3, num(line)) if "cut" in line else
-        None # Problem!
-        for line in data
-      ]
-      position = 2019
-      for op in program:
-        if op[0] == 1: position = rev(position, size)
-        elif op[0] == 2: position = inc(position, size, op[1])
-        elif op[0] == 3: position = cut(position, size, op[1])
-      return position
-    return "Solution:", solve(raw, 10007
+    def cut(l, s):
+        return l[s:] + l[:s]
+
+
+    def deal_with_inc(l, s):
+        new_l = [0]*len(l)
+        i = 0
+        for c in range(len(l)):
+            new_l[i] = l[c]
+            i = (i + s) % len(l)
+        return new_l
+
+
+    def deal_into_new(l):
+        return l[::-1]
+
+
+    l = list(range(10007))
+    for w, n in zip(ws, ns):
+        if w[0] == 'cut':
+            l = cut(l, n[0])
+        elif w[0] == 'deal' and w[1] == 'with':
+            l = deal_with_inc(l, n[0])
+        else:
+            l = deal_into_new(l)
+
+    return l.index(2019)
+
+
+    # Various helpers for modular arithmetic stolen from StackOverflow
+    def egcd(a, b):
+        if a == 0:
+            return (b, 0, 1)
+        else:
+            g, y, x = egcd(b % a, a)
+            return (g, x - (b // a) * y, y)
+
+
+    def modinv(a, m):
+        g, x, y = egcd(a, m)
+        if g != 1:
+            raise Exception('modular inverse does not exist')
+        else:
+            return x % m
+
+
+    def pow_mod(x, y, z):
+        number = 1
+        while y:
+            if y & 1:
+                number = number * x % z
+            y >>= 1
+            x = x * x % z
+        return number
+
+
 
 def part2():
-    #
-    # After 80+ hours on this puzzle, I gave up...
-    #
-    # I calculated the answer for my input using another's
-    # solution, and leaving it here in all its shame:
-    #
-    return "45347150615590"
-    #
-    # Calculated using: https://gist.github.com/Voltara/7d417c77bc2308be4c831f1aa5a5a48d
-    #
-    # After reading up on Reddit, I'm not too sad that I gave
-    # up. I was afraid that it would turn out I was so close,
-    # that I could've solved it on my own if only I kept on
-    # for just a bit longer.
-    #
-    # I'm glad to see that idea was wrong. Even if I had spent
-    # another 80 hours, I probably wouldn't have solved this
-    # puzzle.
-    #
-    # Apparently I did figure out a few key parts of the answer
-    # on my own, including:
-    #
-    # 1. Modular Multiplicative Inverse operation for reversing
-    #    the "deal with increment" operation
-    #
-    # 2. Not needing it after all, because the deck restores to
-    #    factory order after `deckSize` shuffles, so you can just
-    #    shuffle forward to the end to get the answer.
-    #
-    # 3. Composing the 50 input instructions to one operation was
-    #    indeed possible, and even the key.
-    #
-    # 4. There is an "apparent randomness" in the card position,
-    #    and as it turned out parts of this puzzle coincide with
-    #    how pseudo-random generators work.
-    # 
-    # and finally, not "figured out" but suspected:
-    #
-    # 5. Some kind of algorithm to quickly apply the full shuffle
-    #    many times would be possible, heck even the answer.
-    #
-    # 6. The deck size and shuffle count being large primes was
-    #    supposedly indeed meaningful: them being co-primes in fact
-    #    prevented the solution from being too easy.
-    #
-    # In the end, this kind and level of puzzle turns out to be beyond
-    # my grasp. I'd have to spend serious time in math and algorithms
-    # to be able to solve it myself.
-    #
-    # Glad I stopped after "just" 80 hours of trying...
-    #
+    # We want to calculate the inverse of the operation above, then
+    # apply it a whole lot of times. The key insight is that each
+    # of the inverse operations is an affine transformation
+    #   x |-> a*x+b % length,
+    # so we just need to find (a, b) corresponding to the entire shuffle,
+    # then apply that a large number of times.
+    length = 119315717514047
+    rounds = 101741582076661
+    a, b = (1, 0)
+    for i, (w, n) in list(enumerate(zip(ws, ns)))[::-1]:
+        if w[0] == 'cut':
+            a, b = a, b + n[0]
+        elif w[0] == 'deal' and w[1] == 'with':
+            m = modinv(n[0], length)
+            a, b = a*m, b*m
+        else:
+            a, b = -a, -b-1
+        a %= length
+        b %= length
+
+    # At this point we have a and b, and just need to calculate the power
+    # of x |-> a*x+b % length. This is itself an affine transformation,
+    # whose coefficients we need to find. It is easy to see by induction
+    # that the n'th power is
+    #   x |-> a^n x + a^{n-1}b + a^{n-2}n + ... + ab + b % length
+    # whose slope is a^n and whose intercept is
+    #   b(1 + a + ... + a^{n-1}) = b * (a^n-1) * (a-1)^{-1}
+    am = pow_mod(a, rounds, length)
+    bm = b*(pow_mod(a, rounds, length)-1) * modinv(a-1, length)
+    return (am*2020 + bm) % length
 
 print(part1())
 print(part2())

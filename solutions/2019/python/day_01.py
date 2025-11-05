@@ -1,23 +1,29 @@
 import os
 
 INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
-lines = open(os.path.join(INPUT_DIR, "2019_01.txt")).readlines()
+
+with open(os.path.join(INPUT_DIR, '2019_01.txt')) as f:
+    ns = list(map(int, (x.strip() for x in f.readlines())))
+
+
+def fuel(m):
+    return m // 3 - 2
+
+
 
 def part1():
-    sum_val = 0
-    for line in lines:
-        sum_val += int(line) // 3 - 2
-    return sum_val
+    return sum(map(fuel, ns))
+
 
 def part2():
-    def fuel_for(input_val):
-        output = input_val // 3 - 2
-        return 0 if output <= 0 else output + fuel_for(output)
-    
-    sum_val = 0
-    for line in lines:
-        sum_val += fuel_for(int(line))
-    return sum_val
+    total = 0
+    for n in ns:
+        while True:
+            n = fuel(n)
+            if n <= 0:
+                break
+            total += n
+    return total
 
 print(part1())
 print(part2())

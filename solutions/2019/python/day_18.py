@@ -1,142 +1,99 @@
 import os
 
 INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
-lines = open(os.path.join(INPUT_DIR, "2019_18.txt")).readlines()
+
+from heapq import heappop, heappush
+from itertools import chain, count
+
+import networkx as nx
+
+
+with open(os.path.join(INPUT_DIR, '2019_18.txt')) as f:
+    ls = [x.strip() for x in f.readlines()]
+
+
+def make_graph(ls):
+    G = nx.grid_2d_graph(len(ls), len(ls[0]), create_using=nx.Graph)
+    for x in range(len(ls)):
+        for y in range(len(ls[0])):
+            if ls[x][y] == '#':
+                G.remove_node((x, y))
+    return G
+
+
+def generate_location_lookup(ls):
+    starts = []
+    locs = {}
+    for x in range(len(ls)):
+        for y in range(len(ls[0])):
+            if ls[x][y] == '@':
+                starts.append((x, y))
+            if ls[x][y] not in {'.', "#"} and not ls[x][y].isupper():
+                locs[ls[x][y]] = (x, y)
+    return tuple(starts), locs
+
+
+def generate_key_requirements(g, ls, starts, locs, locs_set):
+    required_keys = {}
+    for l1 in chain(starts, locs.values()):
+        for l2 in locs_set:
+            if l1 == l2:
+                continue
+            try:
+                path = nx.shortest_path(g, l1, locs[l2])
+                required_keys[l1, l2] = (set(str.lower(ls[d[0]][d[1]]) for d in path if ls[d[0]][d[1]].isupper()),
+                                         len(path)-1)
+            except nx.NetworkXNoPath:
+                pass
+    return required_keys
+
+
+def accessible(g, loc, keys, locs_set, required_keys):
+    for l in locs_set - keys:
+        required = required_keys.get((loc, l))
+        if required and not required[0] - keys:
+            yield l, required[1]
+
+
+def solve(ls):
+    starts, loc_lookup = generate_location_lookup(ls)
+    locs_set = set(loc_lookup) - set(['@'])
+    g = make_graph(ls)
+    required_keys = generate_key_requirements(g, ls, starts, loc_lookup, locs_set)
+    counter = count()
+    heap = [(0, next(counter), starts, set())]
+    seen = set()
+    while True:
+        length, _, locations, keys = heappop(heap)
+        s = ''.join(keys)
+        if (locations, s) in seen:
+            continue
+        seen.add((locations, s))
+        if len(keys) == len(locs_set):
+            return length
+        for i, loc in enumerate(locations):
+            for key, len_to_key in accessible(g, loc, keys, locs_set, required_keys):
+                new_length = length + len_to_key
+                new_loc = loc_lookup[key]
+                new_ls = list(locations)
+                new_ls[i] = new_loc
+                new_ls = tuple(new_ls)
+                new_keys = set(keys) | set([key])
+                heappush(heap, (new_length, next(counter), new_ls, new_keys))
+
+
 
 def part1():
-    import networkx as nx
-    import matplotlib.pyplot as plt
-    from collections import defaultdict
-    def createLevelFrom(data):
-      x, y = 0, 0
-      level = dict()
-      for line in data:
-        for c in line:
-          if c == "@": position = (x,y)
-          level[(x,y)] = '.' if c == "@" else c
-          x += 1
-        x = 0
-        y += 1
-      return level, position
-    def neighbors(level, p):
-      return [x for x in [
-        (p[0] + 1, p[1]),
-        (p[0] - 1, p[1]),
-        (p[0], p[1] + 1),
-        (p[0], p[1] - 1),
-      ] if x in level and level[x] != "#"]
-    def draw(g, spaces, doors, keys, position):
-      pos = nx.get_node_attributes(g, 'pos')
-      nx.draw_networkx_nodes(g, pos, node_size=200, nodelist=[position], node_color='#eeee00', alpha=0.9)
-      nx.draw_networkx_nodes(g, pos, node_size=30, nodelist=spaces, node_color='#00aaee', alpha=0.8)
-      nx.draw_networkx_nodes(g, pos, node_size=150, nodelist=doors.values(), node_color='#ee0033', alpha=0.8)
-      nx.draw_networkx_nodes(g, pos, node_size=150, nodelist=keys.values(), node_color='#33ee66', alpha=0.8)
-      nx.draw_networkx_edges(g, pos, alpha=0.6)
-      labels = nx.get_node_attributes(g,'label')
-      nx.draw_networkx_labels(g, pos, labels=labels, font_size=11, alpha=0.4)
-      labels = nx.get_edge_attributes(g,'weight')
-      nx.draw_networkx_edge_labels(g, pos, font_size=7, edge_labels=labels)
-      plt.show()
-    def createGameFrom(level, position) -> (nx.Graph, set(), dict(), dict()):
-      spaces = set()
-      keys = dict()
-      doors = dict()
-      curgraph = nx.Graph()
-      for p in level:
-        if level[p] == "#": continue
-        if level[p] == ".": spaces.add(p)
-        if level[p].isupper(): doors[level[p].lower()] = p
-        if level[p].islower(): keys[level[p]] = p
-        label = "" if level[p] == "." else level[p]
-        curgraph.add_node(p, pos=(p[0], -p[1]), label=label)
-      for p in level:
-        for n in neighbors(level, p):
-          if n in curgraph.nodes() and p in curgraph.nodes():
-            curgraph.add_edge(p, n, weight=1)
-      # Remove leaves, both spaces and dead-end doors:
-      keepgoing = True
-      while keepgoing:
-        keepgoing = False
-        leaves = [
-          x for x in curgraph.nodes()
-          if x != position and len(list(curgraph.neighbors(x))) == 1
-        ]
-        for leaf in leaves:
-          if level[leaf] == "." or level[leaf].isupper():
-            keepgoing = True
-            curgraph.remove_node(leaf)
-            if level[leaf] == ".": spaces.remove(leaf) 
-            else: del doors[level[leaf].lower()]
-      # Another round of condensing hallways:
-      keepgoing = True
-      while keepgoing:
-        keepgoing = False
-        potentials = [x for x in curgraph.nodes() if len(list(curgraph.neighbors(x))) == 2]
-        for pot in potentials:
-          others = list(curgraph.neighbors(pot))
-          if pot in spaces and len(others) == 2 and pot != position:
-            weight = curgraph.edges[others[0], pot]['weight'] + curgraph.edges[others[1], pot]['weight']
-            curgraph.remove_node(pot)
-            spaces.remove(pot)
-            curgraph.add_edge(others[0], others[1], weight=weight)
-      return curgraph, spaces, doors, keys
-    def solve(data):
-      level, position = createLevelFrom(data)
-      curgraph, spaces, doors, keys = createGameFrom(level, position)
-      # draw(curgraph, spaces, doors, keys, position)
-      allkeys = frozenset(keys.keys())
-      alldoors = frozenset(doors.keys())
-      states = { (position, frozenset()): 0 }
-      while True:
-        newstates = dict()
-    return f"Recursing. First state with nr of keys: {len(next(iter(states[1]}"
-        for state in states:
-          neededKeys = allkeys - state[1]
-          closeddoors = alldoors - set([x for x in state[1]])
-          closeddoorspoints = set([doors[k] for k in closeddoors])
-          targets = [keys[k] for k in keys if k in neededKeys]
-          paths = [
-            nx.single_source_dijkstra(curgraph, state[0], t, weight=lambda u, v, d: d["weight"]) # TODO: Improve speed by filtering closed doors here?
-            for t in targets
-          ]
-          paths = [
-            p for p in paths
-            if not set(p[1]) & closeddoorspoints
-          ]
-          # Show all reachable keys and their costs and their paths:
-          for weight,path in paths:
-            newcost = states[state] + weight
-            newpos = path[-1]
-            newkeys = frozenset(state[1] | { level[newpos] })
-            newstate = (newpos, newkeys)
-            newstates[newstate] = min(newcost, newstates[newstate]) if newstate in newstates else newcost
-        states = newstates
-        done = False
-        for state in [s for s in states if s[1] == allkeys]:
-          done = True
-        if done: break
-      return min(states.values())
-    def solveFromFile(file):
-    return "TESTS:"
-    return "Custom 001. Expected   14 ==", solveFromFile("custom001.txt", "\n"
-    return "Example 001. Expected   8 ==", solveFromFile("example001.txt", "\n"
-    return "Example 002. Expected  86 ==", solveFromFile("example002.txt", "\n"
-    return "Example 003. Expected 132 ==", solveFromFile("example003.txt", "\n"
-    return "Example 004. Expected 136 ==", solveFromFile("example004.txt", "\n"
-    return "Example 005. Expected  81 ==", solveFromFile("example005.txt", "\n"
-    return "FINAL ANSWER:"
-    return "Part 1:", solveFromFile("input.txt"
+    return solve(ls)
+
 
 def part2():
-    def solveFromFile(file):
-      with open(file, 'r') as file:
-        return solve(file.read().splitlines())
-    
+    starts, _ = generate_location_lookup(ls)
+    start = starts[0]
+    for i in (-1, 0, 1):
+        ls[start[0]+i] = ls[start[0]+i][:start[1]-1] + ('@#@' if i else '###') + ls[start[0]+i][start[1]+2:]
 
-    import networkx as nx
-    import matplotlib.pyplot as plt
-    from collections import defaultdict
-    return "Part 2:", solveFromFile("input.txt"
+    return solve(ls)
 
 print(part1())
 print(part2())
