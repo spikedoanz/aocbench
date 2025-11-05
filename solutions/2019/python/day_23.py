@@ -1,137 +1,67 @@
 import os
 
 INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
-lines = open(os.path.join(INPUT_DIR, "2019_23.txt")).readlines()
+
+from collections import defaultdict, deque
+from queue import Queue
+import time
+from vm import VM, read_program
+
+ns = read_program(23)
+
+class Input:
+    def __init__(self, i):
+        self.inputs = deque([i])
+
+    def popleft(self):
+        return self.inputs.popleft() if self.inputs else -1
+
+    def add(self, val):
+        self.inputs.append(val)
+
+vms = []
+for i in range(50):
+    inputs = Input(i)
+    vm = VM(ns, inputs)
+    vms.append(vm)
+i = 0
+idling = set()
+NAT = None
+last_y = None
 
 def part1():
-    from collections import deque, defaultdict
-    def runComputer(data, inputqueue: deque, inputDefault = lambda: -1):
-      program = defaultdict(int, { k: v for k, v in enumerate(data) })
-      output = None
-      i = 0
-      relbase = 0
-      while True:
-        opcode = program[i] % 100
-        if opcode == 99: break
-        mode1 = (program[i] - opcode) // 100 % 10
-        mode2 = (program[i] - opcode) // 1000 % 10
-        mode3 = (program[i] - opcode) // 10000 % 10
-        p1, p2, p3 = None, None, None
-        if mode1 == 0: p1 = program[i + 1]
-        elif mode1 == 1: p1 = i + 1
-        elif mode1 == 2: p1 = program[i + 1] + relbase
-        if mode2 == 0: p2 = program[i + 2]
-        elif mode2 == 1: p2 = i + 2
-        elif mode2 == 2: p2 = program[i + 2] + relbase
-        if mode3 == 0: p3 = program[i + 3]
-        elif mode3 == 1: raise ValueError('Immediate mode invalid for param 3')
-        elif mode3 == 2: p3 = program[i + 3] + relbase
-        if opcode == 1: # addition
-          program[p3] = program[p1] + program[p2]
-          i += 4
-        elif opcode == 2: # multiplication
-          program[p3] = program[p1] * program[p2]
-          i += 4
-        elif opcode == 3: # input
-          if len(inputqueue) > 0:
-            program[p1] = inputqueue.popleft()
-            i += 2
-          else:
-            program[p1] = inputDefault()
-            i += 2
-            yield "CONTINUE"
-        elif opcode == 4: # output
-          yield program[p1]
-          i += 2
-        elif opcode == 5: # jump-if-true
-          i = program[p2] if program[p1] != 0 else i + 3
-        elif opcode == 6: # jump-if-false
-          i = program[p2] if program[p1] == 0 else i + 3
-        elif opcode == 7: # less-than
-          program[p3] = 1 if program[p1] < program[p2] else 0
-          i += 4
-        elif opcode == 8: # equals
-          program[p3] = 1 if program[p1] == program[p2] else 0
-          i += 4
-        elif opcode == 9: # relative base adjust
-          relbase += program[p1]
-          i += 2
-        else:
-          raise ValueError(f'opcode {opcode} from {program[i]}')
-    def solve(data):
-      inputs = []
-      computers = []
-      for i in range(50):
-        q = deque()
-        inputs.append(q)
-        computers.append(runComputer(data, q))
-        q.append(i) # provide network address
-      while True:
-        for i in range(50):
-          addr = next(computers[i])
-          if addr == "CONTINUE": continue
-          x, y = next(computers[i]), next(computers[i])
-          if addr == 255:
-    return f"x = {x} and y = {y}"
-            return y
-          # print(f"Computer {i} sending to {addr} packet ({x}, {y})")
-          inputs[addr].append(x)
-          inputs[addr].append(y)
-      return "No solution found yet"
-    return "Solution:", solve(raw
+    pass
 
 def part2():
-    def solve(data):
-      inputs = []
-      computers = []
-      for i in range(50):
-        q = deque()
-        inputs.append(q)
-        computers.append(runComputer(data, q))
-        q.append(i) # provide network address
-    
-      idlecount = 0
-      natready = False
-      natmemory = (None, None)
-      lasty = None
-    
-      while True:
-        if idlecount == 50 and natready:
-          print(f"Idle count was 50 so sending {natmemory}")
-          if lasty == natmemory[1]: return lasty
-          inputs[0].append(natmemory[0])
-          inputs[0].append(natmemory[1])
-          natready = False
-          lasty = natmemory[1]
-    
-        idlecount = 0
-    
-        # print("Looping 50 computers")
-        for i in range(50):
-          addr = next(computers[i])
-    
-          if addr == "CONTINUE":
-            idlecount += 1
+    global i, idling, NAT, last_y
+    while True:
+        dst = next(vms[i].it)
+        if dst is None:
+            if not vms[i].inputs.inputs:
+                idling.add(i)
+            if len(idling) == 50 and NAT is not None:
+                if NAT[1] == last_y:
+                    return last_y
+                last_y = NAT[1]
+                vms[0].inputs.add(NAT[0])
+                vms[0].inputs.add(NAT[1])
+                idling.remove(0)
+                i = 0
+                continue
+            i = (i + 1) % 50
             continue
-    
-          x, y = next(computers[i]), next(computers[i])
-    
-          if addr == 255:
-            print(f"NAT notified of ({x}, {y})")
-            natmemory = (x,y)
-            natready = True
-            continue
-    
-          # print(f"Computer {i} sending to {addr} packet ({x}, {y})")
-          inputs[addr].append(x)
-          inputs[addr].append(y)
-    
-      return "No solution found yet"
-    
-
-    from collections import deque, defaultdict
-    # Not 17499, too high
-    return "Solution:", solve(raw
+        if i in idling:
+            idling.remove(i)
+        x, y = next(vms[i]), next(vms[i])
+        if dst == 255:
+            if NAT is None:
+                print(y)
+            NAT = (x, y)
+            i = (i + 1) % 50
+        else:
+            vms[dst].inputs.add(x)
+            vms[dst].inputs.add(y)
+            i = dst
 
 print(part1())
 print(part2())

@@ -1,39 +1,31 @@
 import os
 
 INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
-lines = open(os.path.join(INPUT_DIR, "2019_04.txt")).readlines()
+
+start = 245182
+end = 790572
+
+
+def two_adjacent(d, part_one):
+    s = str(d)
+    return any(s[i] == s[i+1] and
+               (part_one or
+                ((i == len(s) - 2 or s[i+1] != s[i+2]) and (i == 0 or s[i-1] != s[i])))
+               for i in range(len(s) - 1))
+
+
+def increasing(d):
+    s = str(d)
+    return sorted(s) == list(s)
+
+
 
 def part1():
-    from collections import Counter
-    def solve(input):
-      lower, upper = map(int, input[0].split("-"))
-      n = 0
-      for x in range(lower, upper):
-        candidate = str(x)
-        counts = Counter(candidate)
-        twosame = max(counts.values()) >= 2
-        increases = list(candidate) == sorted(candidate)
-        if twosame and increases: n += 1
-      return n
-    return solve(data
+    return sum(two_adjacent(d, True) and increasing(d) for d in range(start, end))
+
 
 def part2():
-    def solve(input):
-      lower, upper = map(int, input[0].split("-"))
-      n = 0
-    
-      for x in range(lower, upper):
-        candidate = str(x)
-        counts = Counter(candidate)
-        twosame = 2 in counts.values()
-        increases = list(candidate) == sorted(candidate)
-        if twosame and increases: n += 1
-    
-      return n
-    
-
-    from collections import Counter
-    return solve(data
+    return sum(two_adjacent(d, False) and increasing(d) for d in range(start, end))
 
 print(part1())
 print(part2())

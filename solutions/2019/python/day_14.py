@@ -1,85 +1,61 @@
 import os
 
 INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
-lines = open(os.path.join(INPUT_DIR, "2019_14.txt")).readlines()
+
+from collections import defaultdict
+from math import ceil
+
+
+with open(os.path.join(INPUT_DIR, '2019_14.txt')) as f:
+    ws = [l.replace(',', '').split() for l in f.readlines()]
+
+d = {}
+for w in ws:
+    a = []
+    i = 0
+    while i < len(w)-3:
+        a.append((w[i+1], int(w[i])))
+        i += 2
+    d[w[-1]] = (int(w[-2]), a)
+
+
+def minbyel(el, needed, stock):
+    if needed < stock[el]:
+        return 0, 0
+    if el == 'ORE':
+        return needed, needed
+    needed = needed - stock[el]
+    produced, reaction = d[el]
+    runs = ceil(needed / produced)
+    scaled_reaction = [(a, runs*b) for a, b in reaction]
+    ore = 0
+    for elp, np in scaled_reaction:
+        p, eo = minbyel(elp, np, stock)
+        ore += eo
+        stock[elp] += p - np
+    return produced * runs, ore
+
+
 
 def part1():
-    from math import ceil
-    from collections import defaultdict
-      reactions = dict()
-      for line in data:
-        parts = line.split(" => ")
-        inputs = []
-        for i in parts[0].split(","):
-          spl = i.split()
-          inputs.append((int(spl[0]), spl[1].strip()))
-        outparts = parts[1].strip().split()
-        output = (int(outparts[0]), outparts[1])
-        reactions[output] = inputs
-    # print('REACTIONS:')
-    # for k in reactions:
-    #   print(k, reactions[k])
-    # print()
-    def solve(data):
-      needed = { "FUEL": 1 }
-      leftovers = defaultdict(int)
-      while True:
-        if len(needed) == 1 and "ORE" in needed:
-          break
-        newneeded = dict()
-        if "ORE" in needed:
-          newneeded["ORE"] = needed["ORE"]
-        for n in needed:
-          for rkey in reactions:
-            if rkey[1] == n:
-              actuallyneeded = max(0, needed[n] - leftovers[n])
-              leftovers[n] -= (needed[n] - actuallyneeded)
-              if actuallyneeded == 0:
-                continue
-              produced = rkey[0]
-              factor = int(ceil(actuallyneeded / produced))
-              ingredients = reactions[rkey]
-              surplus = (produced * factor) - actuallyneeded
-              leftovers[n] += surplus
-              for ing in ingredients:
-                alreadyneeded = 0 if ing[1] not in newneeded else newneeded[ing[1]]
-                req = ing[0] * factor
-                newneeded[ing[1]] = req + alreadyneeded
-        needed = newneeded
-      return needed["ORE"]
-    return "Part 1:", solve(reactions
+    stock = defaultdict(int)
+    _, res = minbyel('FUEL', 1, stock)
+    return res
+
 
 def part2():
-    def solve(reactions):
-      trillion = 1_000_000_000_000
-      fuel = 1
-      tried = set()
-    
-      while True:
-        tried.add(fuel)
-        needed = solveFor(reactions, fuel)
-        ore = needed["ORE"]
-        if ore > trillion: break
-        fuel = floor(fuel * trillion / ore)
-        if fuel in tried: break
-    
-      return fuel
-    
-
-    from math import ceil, floor
-    from collections import defaultdict
-      reactions = dict()
-      for line in data:
-        parts = line.split(" => ")
-        inputs = []
-        for i in parts[0].split(","):
-          spl = i.split()
-          inputs.append((int(spl[0]), spl[1].strip()))
-        outparts = parts[1].strip().split()
-        output = (int(outparts[0]), outparts[1])
-        reactions[output] = inputs
-    # Could well be a lucky answer though, off-by-one for other inputs..
-    return "Part 2:", solve(reactions
+    lo = 0
+    hi = 1000000000000
+    while hi != lo + 1:
+        stock = defaultdict(int)
+        stock['ORE'] = 1000000000000
+        half = lo + (hi - lo) // 2
+        _, res = minbyel('FUEL', half, stock)
+        if res > 0:
+            hi = half
+        else:
+            lo = half
+    return hi
 
 print(part1())
 print(part2())

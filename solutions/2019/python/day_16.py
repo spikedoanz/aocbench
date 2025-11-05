@@ -1,77 +1,52 @@
 import os
 
 INPUT_DIR = os.path.expanduser(os.getenv('AOC_INPUT_DIR', '~/.cache/aocb/inputs/'))
-lines = open(os.path.join(INPUT_DIR, "2019_16.txt")).readlines()
+
+from numba import jit
+import numpy as np
+
+
+with open(os.path.join(INPUT_DIR, '2019_16.txt')) as f:
+    data = f.read().strip()
+
+inp = list(map(int, data))
+
+
 
 def part1():
-    from collections import defaultdict
-    def firsteight(freqs):
-      return ''.join(list(map(str, freqs))[:8])
-    def solve(input):
-      freqs = data.copy()
-      pattern = [0, 1, 0, -1]
-      maxlength = len(freqs)
-      for _ in range(100):
-        newfreqs = []
-        for i in range(maxlength):
-          newf = 0
-          j = 0
-          for j in range(maxlength):
-            repeats = i + 1
-            pidx = (j + 1) // repeats
-            pidx = pidx % 4
-            factor = pattern[pidx]
-            newf += freqs[j] * factor
-          newfreqs.append(abs(newf) % 10)
-        freqs = newfreqs
-      return firsteight(freqs)
-    return "Part 1:", solve(data
+    def step(l):
+        new = np.zeros(len(l), dtype=int)
+        for i in range(len(l)):
+            indices = (np.arange(1, len(l)+1) // (i+1)) % 4
+            el = (l[indices == 1].sum() - l[indices == 3].sum())
+            new[i] = abs(el) % 10
+        return new
+
+
+    l = np.array(inp)
+    for _ in range(100):
+        l = step(l)
+    return ''.join(map(str, l[:8]))
+
+
 
 def part2():
-    def firsteight(freqs):
-      return ''.join(list(map(str, freqs))[:8])
-    
+    # The key insight is that the 7-digit offset is in the second half of the
+    # elongated input. This means that we only need to bother with the bottom
+    # right block of the matrix which is the upper-triangular matrix of ones,
+    # so we simply apply this to the second half of the input vector 100 times.
+    @jit
+    def iterate(l):
+        for _ in range(100):
+            for j in range(1, len(l)):
+                l[len(l)-j-1] = (l[len(l)-j] + l[len(l)-j-1]) % 10
+        return l
 
-    def solve(data, messageRepeat = officialRepeatCount):
-      # Brute forced that answer in only 9 hours 21 minutes and 57 seconds
-      # (be glad  you made a computer brute force it, could also spend at least
-      # 09:21:57 seconds thinking about it... but find the answer manually :P)
-      # on my high-end CPU (single core though! could be parallelized). Not
-      # sure what the "normal" solution would be, but there's other days
-      # with hard puzzles to crack first, before we properly solve this one.
-      #
-      # PS. That time was on .NET Core, I estimate pypy3 would be 2-3 x slower.
-      return 17069048
-    
-      messageoffset = int(data[:7])
-      freqs = list(map(int, data)) * messageRepeat
-      pattern = [0, 1, 0, -1]
-      maxlength = len(freqs)
-      start = time()
-      newfreqs = [0] * maxlength
-    
-      for step in range(100):
-        print('step', str(step).ljust(2, ' '), 'time', str(round(time() - start, 4)).ljust(7, "0"))
-    
-        for i in range(messageoffset, maxlength):
-          newFrequency = 0
-          repeats = i + 1
-          for j in range(i, maxlength):
-            pidx = (j + 1) // repeats
-            pidx = pidx % 4
-            factor = pattern[pidx]
-            newFrequency += freqs[j] * factor
-          newfreqs[i] = abs(newFrequency) % 10
-        
-        freqs = newfreqs.copy()
-    
-      return firsteight(freqs[messageoffset:])
-    
 
-    from time import time
-    from collections import defaultdict
-    officialRepeatCount = 10000
-    return "Part 2:", solve(txt
+    l = np.array(inp*5000)
+    offset = int(''.join(map(str, inp[:7])))
+    l = iterate(l)
+    return ''.join(map(str, l[offset-len(l):offset-len(l)+8]))
 
 print(part1())
 print(part2())
